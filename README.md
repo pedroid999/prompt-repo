@@ -32,8 +32,8 @@ git clone <repo-url>
 cd prompt-repo
 npm install
 
-# Initialize Supabase Local
-supabase start
+# Initialize Supabase Local (requires Docker)
+npx supabase start
 ```
 
 ### 3. Environment Variables

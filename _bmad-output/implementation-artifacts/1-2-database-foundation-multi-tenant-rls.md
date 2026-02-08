@@ -1,6 +1,6 @@
 # Story 1.2: Database Foundation & Multi-tenant RLS
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -67,9 +67,9 @@ Gemini 2.0 Flash
 ### Completion Notes List
 - Created `supabase/migrations` directory.
 - Implemented `20260208000000_init_foundation.sql` containing the `profiles` table, RLS enablement, and policies (SELECT, INSERT, UPDATE, DELETE).
-- Added a PostgreSQL function `handle_new_user()` (secured) and a trigger `on_auth_user_created` to automatically create profiles on signup.
-- Added `handle_updated_at()` function and trigger for the `profiles` table.
-- Created a verification document `docs/verification/rls-isolation.md` detailing the steps for manual RLS testing.
+- Added a PostgreSQL function `handle_new_user()` (secured with `SET search_path = public` and metadata fallback) and a trigger `on_auth_user_created` to automatically create profiles on signup.
+- Added `handle_updated_at()` function (secured with `SET search_path = public`) and trigger for the `profiles` table.
+- Created a verification document `docs/verification/rls-isolation.md` detailing the steps for manual RLS testing (cleaned up post-review).
 
 ### File List
 - supabase/migrations/20260208000000_init_foundation.sql

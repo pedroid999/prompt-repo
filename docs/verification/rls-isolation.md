@@ -38,9 +38,9 @@ This document outlines the manual verification steps to ensure that Row Level Se
 
 ## 5. Verify `DELETE` Isolation
 **Goal:** Ensure users cannot delete other users' profiles.
-*Note: Currently no DELETE policy is explicitly created in migration 20260208000000, which means DELETE is denied by default if RLS is enabled.*
 
 **Steps:**
 1. Authenticate as User A.
 2. Execute: `DELETE FROM public.profiles WHERE id = [USER_B_ID]`.
-3. **Success Criteria:** Zero rows are deleted and User B's record remains.
+3. **Success Criteria:** The operation succeeds (0 rows affected) or fails with an error, but User B's record remains.
+

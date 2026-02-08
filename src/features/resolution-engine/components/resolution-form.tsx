@@ -117,12 +117,12 @@ export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps)
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <FormChangeNotifier control={control} onValuesChange={onValuesChange} />
-      
+
       <Form {...form}>
-        <form 
-          className="space-y-4 p-4"
+        <form
+          className="space-y-3 md:space-y-4 p-4 md:p-6"
           onSubmit={(e) => {
             e.preventDefault();
             handleCopy();
@@ -134,12 +134,12 @@ export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps)
               control={control}
               name={variable}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-foreground">{variable}</FormLabel>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs md:text-sm text-foreground">{variable}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      className="font-mono bg-background border-border text-foreground focus-visible:ring-ring"
+                      className="h-8 md:h-10 font-mono text-sm bg-background border-border text-foreground focus-visible:ring-ring"
                       autoComplete="off"
                       autoFocus={index === 0}
                     />
@@ -148,27 +148,29 @@ export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps)
               )}
             />
           ))}
-          
+
           <div className="pt-2">
-            <Button 
-              type="submit" 
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            <Button
+              type="submit"
+              className="w-full h-9 md:h-10 bg-primary text-primary-foreground hover:bg-primary/90 text-sm"
             >
               Copy Resolved Prompt
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">
-              Press <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+              Press <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground opacity-100">
                 <span className="text-xs">Cmd/Ctrl +</span> Enter
               </kbd> to copy instantly
             </p>
           </div>
         </form>
       </Form>
-      
-      <div className="p-4 border-t border-border">
-        <h4 className="mb-2 text-sm font-medium text-muted-foreground">Preview</h4>
+
+      <div className="p-4 md:p-6 border-t border-border">
+        <h4 className="mb-2 text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wider">Preview</h4>
         <LiveResolvedPreview control={control} content={content} />
       </div>
     </div>
   );
 }
+
+  

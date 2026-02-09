@@ -15,12 +15,7 @@ import { EditCollectionDialog } from "./edit-collection-dialog";
 import { deleteCollection } from "../actions";
 import { toast } from "sonner";
 import { useState } from "react";
-
-type Collection = {
-  id: string;
-  name: string;
-  description: string | null;
-};
+import { Collection } from "../types";
 
 export function CollectionList({ 
   collections,

@@ -11,11 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { CollectionList } from '@/features/collections/components/collection-list';
-
-interface Collection {
-  id: string;
-  name: string;
-}
+import { Collection } from '@/features/collections/types';
 
 interface MobileNavProps {
   collections: Collection[];

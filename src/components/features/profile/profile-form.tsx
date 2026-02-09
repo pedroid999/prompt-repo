@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { updateProfile } from "@/app/profile/actions"
 import { profileSchema, ProfileFormValues } from "@/lib/validation/profile"
 import { startTransition, useOptimistic } from "react"
+import Image from "next/image"
 
 interface ProfileFormProps {
   initialData: {
@@ -66,7 +67,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             // by the next server render or by form state management
             return
         }
-    } catch (error) {
+    } catch (_error) {
         toast.error("An unexpected error occurred")
     }
   }
@@ -83,13 +84,12 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
             </div>
             {optimisticProfile.avatar_url && (
                 <div className="relative h-16 w-16 overflow-hidden rounded-full border border-border">
-                    <img 
+                    <Image 
                         src={optimisticProfile.avatar_url} 
                         alt="Avatar Preview" 
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                        }}
+                        fill
+                        className="object-cover"
+                        unoptimized
                     />
                 </div>
             )}

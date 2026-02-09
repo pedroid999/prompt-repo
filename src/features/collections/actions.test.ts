@@ -102,7 +102,7 @@ describe('Collection Actions', () => {
   describe('getCollections', () => {
     it('fetches collections', async () => {
         // Mock data property for the awaited result
-        mockSupabase.data = [{ id: '1', name: 'Test' }] as any
+        mockSupabase.data = [{ id: '1', name: 'Test' }] as never
         
         const result = await getCollections()
         

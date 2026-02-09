@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu } from 'lucide-react';
+import { Library } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,9 +27,9 @@ export function MobileNav({ collections }: MobileNavProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden text-[#DCD7BA] hover:bg-[#2D4F67]">
-          <Menu className="h-6 w-6" />
-          <span className="sr-only">Toggle Collections</span>
+        <Button variant="ghost" size="sm" className="md:hidden text-[#DCD7BA] hover:bg-[#2D4F67] px-2 gap-2">
+          <Library className="h-5 w-5" />
+          <span className="text-xs font-medium">Collections</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[300px] bg-[#1F1F28] border-[#16161D] p-0 h-[80vh] flex flex-col">

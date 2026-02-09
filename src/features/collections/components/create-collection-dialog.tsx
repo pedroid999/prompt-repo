@@ -27,8 +27,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { createCollectionSchema, CreateCollectionInput } from "../schemas";
 import { createCollection } from "../actions";
+import { cn } from "@/lib/utils";
 
-export function CreateCollectionDialog() {
+export function CreateCollectionDialog({ showLabel }: { showLabel?: boolean }) {
   const [open, setOpen] = useState(false);
   const form = useForm<CreateCollectionInput>({
     resolver: zodResolver(createCollectionSchema),
@@ -54,12 +55,20 @@ export function CreateCollectionDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-4 w-4">
+        <Button 
+          variant="ghost" 
+          size={showLabel ? "sm" : "icon"} 
+          className={cn(
+            "text-[#DCD7BA] hover:bg-[#2D4F67]",
+            showLabel ? "h-8 px-2 gap-2" : "h-8 w-8"
+          )}
+        >
           <Plus className="h-4 w-4" />
+          {showLabel && <span className="text-xs font-medium">New Collection</span>}
           <span className="sr-only">Create Collection</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-[#1F1F28] border-[#16161D] text-[#DCD7BA]">
         <DialogHeader>
           <DialogTitle>Create Collection</DialogTitle>
           <DialogDescription>

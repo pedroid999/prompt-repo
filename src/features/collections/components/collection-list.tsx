@@ -31,13 +31,22 @@ export function CollectionList({
 }) {
   const searchParams = useSearchParams();
   const currentCollectionId = searchParams.get("collectionId");
+  const isMobile = !!onSelect; // Simplified check for mobile view usage
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-2">
-        <h2 className="text-sm font-semibold text-[#DCD7BA]">Collections</h2>
-        <CreateCollectionDialog />
-      </div>
+      {!isMobile && (
+        <div className="flex items-center justify-between px-2 mb-2">
+          <h2 className="text-sm font-semibold text-[#DCD7BA] uppercase tracking-wider">Collections</h2>
+          <CreateCollectionDialog />
+        </div>
+      )}
+      {isMobile && (
+        <div className="flex items-center justify-between px-2 mb-4">
+           <span className="text-xs text-[#938AA9] uppercase tracking-wider font-semibold">Library</span>
+           <CreateCollectionDialog showLabel />
+        </div>
+      )}
       <nav className="space-y-1">
         <Link
           href="/"

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/components/features/search/search-bar';
 import { getCollections } from "@/features/collections/actions";
 import { MobileNav } from '@/components/features/navigation/mobile-nav';
+import { Plus } from 'lucide-react';
 
 export default async function Home({
   searchParams,
@@ -36,6 +37,12 @@ export default async function Home({
           </div>
         </div>
         <div className="flex items-center gap-1 md:gap-4 shrink-0">
+          <Link href="/prompts/create">
+            <Button variant="ghost" size="sm" className="text-[#DCD7BA] hover:bg-[#2D4F67] hover:text-[#DCD7BA] h-8 md:h-10 text-xs md:text-sm">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">New Prompt</span>
+            </Button>
+          </Link>
           <Link href="/profile">
             <Button variant="ghost" size="sm" className="text-[#DCD7BA] hover:bg-[#2D4F67] hover:text-[#DCD7BA] h-8 md:h-10 text-xs md:text-sm">
               Profile

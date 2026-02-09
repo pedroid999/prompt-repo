@@ -3,9 +3,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Github } from "lucide-react"
-import { signInWithEmail, signInWithGithub, signInWithGoogle } from "@/app/auth/actions"
+import { signInWithEmail, signInWithGithub, signInWithGoogle, signUpWithEmail } from "@/app/auth/actions"
 import { SubmitButton } from "@/components/shared/auth/submit-button"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 type Props = {
@@ -15,6 +15,7 @@ type Props = {
 export default async function LoginPage(props: Props) {
   const searchParams = await props.searchParams
   const error = typeof searchParams.error === 'string' ? searchParams.error : undefined
+  const message = typeof searchParams.message === 'string' ? searchParams.message : undefined
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -22,7 +23,7 @@ export default async function LoginPage(props: Props) {
         <CardHeader>
           <CardTitle className="text-2xl" role="heading" aria-level={1}>Sign In</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your email below to login or create an account
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -35,7 +36,16 @@ export default async function LoginPage(props: Props) {
               </AlertDescription>
             </Alert>
           )}
-          <form action={signInWithEmail} className="grid gap-2">
+          {message && (
+            <Alert className="border-emerald-500 text-emerald-500">
+              <CheckCircle2 className="h-4 w-4 stroke-emerald-500" />
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription>
+                {decodeURIComponent(message)}
+              </AlertDescription>
+            </Alert>
+          )}
+          <form className="grid gap-2">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" name="email" type="email" placeholder="m@example.com" required />
@@ -44,7 +54,10 @@ export default async function LoginPage(props: Props) {
               <Label htmlFor="password">Password</Label>
               <Input id="password" name="password" type="password" required />
             </div>
-            <SubmitButton className="w-full mt-2" pendingText="Signing In...">Sign In</SubmitButton>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <SubmitButton formAction={signInWithEmail} pendingText="Signing In...">Sign In</SubmitButton>
+              <SubmitButton formAction={signUpWithEmail} variant="outline" pendingText="Signing Up...">Sign Up</SubmitButton>
+            </div>
           </form>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

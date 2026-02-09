@@ -36,15 +36,26 @@ npm install
 npx supabase start
 ```
 
-### 3. Environment Variables
+### 3. Environment Variables & Auth
 Create a `.env.local` file with your Supabase credentials:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-local-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-local-service-role-key
+
+# OAuth (Optional for local)
+GITHUB_CLIENT_ID=your-github-id
+GITHUB_CLIENT_SECRET=your-github-secret
+GOOGLE_CLIENT_ID=your-google-id
+GOOGLE_CLIENT_SECRET=your-google-secret
 ```
 
-### 4. Run the App
+### 4. Local Authentication
+- **Email/Password**: When you sign up locally, Supabase sends a confirmation email. Since we are in a local environment, these emails are captured by **Mailpit**.
+- **Mailpit UI**: Open [http://localhost:54324](http://localhost:54324) to see the confirmation emails and click the links.
+- **OAuth (GitHub/Google)**: To test OAuth locally, ensure you have configured the `client_id` and `secret` in your `.env.local` (as shown above). The Supabase local CLI will automatically pick them up to configure the local auth service.
+
+### 5. Run the App
 ```bash
 npm run dev
 ```

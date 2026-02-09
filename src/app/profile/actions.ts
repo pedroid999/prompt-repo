@@ -45,7 +45,7 @@ export async function updateProfile(formData: FormData) {
   const validationResult = profileSchema.safeParse(rawData)
 
   if (!validationResult.success) {
-    const errorMessage = validationResult.error.errors?.[0]?.message || "Invalid data"
+    const errorMessage = validationResult.error.issues?.[0]?.message || "Invalid data"
     return { 
       data: null, 
       error: errorMessage

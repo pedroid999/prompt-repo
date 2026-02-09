@@ -8,6 +8,7 @@ import { SearchBar } from '@/components/features/search/search-bar';
 import { getCollections } from "@/features/collections/actions";
 import { MobileNav } from '@/components/features/navigation/mobile-nav';
 import { Plus } from 'lucide-react';
+import { PromptWithLatestVersion } from '@/features/prompts/types';
 
 export default async function Home({
   searchParams,
@@ -15,11 +16,13 @@ export default async function Home({
   searchParams: Promise<{ q?: string; id?: string; collectionId?: string }>;
 }) {
   const { q: query, id: promptId, collectionId } = await searchParams;
-  let prompts;
+  let prompts: PromptWithLatestVersion[];
 
   if (query) {
     const { data, error } = await searchPrompts(query, { collectionId });
-    prompts = data || [];
+    // Transform SearchResult[] to PromptWithLatestVersion[] if needed
+    // Assuming search_prompts RPC already returns collection_ids after DB fix or casting
+    prompts = (data as PromptWithLatestVersion[]) || [];
   } else {
     prompts = await getPrompts(collectionId);
   }

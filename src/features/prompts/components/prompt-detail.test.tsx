@@ -57,7 +57,7 @@ describe('PromptDetail', () => {
   });
 
   it('switches to history tab and fetches data', async () => {
-    (queryModule.getPromptHistory as any).mockResolvedValue(mockHistory);
+    vi.mocked(queryModule.getPromptHistory).mockResolvedValue(mockHistory);
 
     render(<PromptDetail prompt={mockPrompt} />);
 

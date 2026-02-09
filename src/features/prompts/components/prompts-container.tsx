@@ -34,7 +34,7 @@ export function PromptsContainer({ prompts, collections = [], initialSelectedId 
         setSelectedPrompt(updated);
       }
     }
-  }, [prompts]);
+  }, [prompts, selectedPrompt]);
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col md:flex-row overflow-hidden">

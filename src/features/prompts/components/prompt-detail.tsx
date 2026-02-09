@@ -21,11 +21,11 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
   const [history, setHistory] = useState<PromptVersion[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const variables = useMemo(() => 
     prompt ? extractVariables(prompt.latest_content) : [],
-    [prompt?.latest_content]
+    [prompt]
   );
   const hasVariables = variables.length > 0;
 
@@ -49,7 +49,7 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
         .then((data) => {
           if (isMounted) setHistory(data);
         })
-        .catch((err) => {
+        .catch((_err) => {
           if (isMounted) setHistoryError("Failed to load history.");
         })
         .finally(() => {
@@ -144,7 +144,7 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
           <ScrollArea className="h-full">
             <ResolutionForm 
               content={prompt.latest_content} 
-              onValuesChange={(values) => {
+              onValuesChange={(_values) => {
                 // Future: real-time preview in Story 3.3
               }}
             />

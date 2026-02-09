@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { updateSession } from './middleware'
-import { NextRequest } from 'next/server'
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: vi.fn(),

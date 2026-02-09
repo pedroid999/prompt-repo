@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { createClient } from '@supabase/supabase-js';
 
 // This test is intended to be run against a local Supabase instance or a test project.
 // For now, we are mocking the client to verify the logic, but in a real scenario 

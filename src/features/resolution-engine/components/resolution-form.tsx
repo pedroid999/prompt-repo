@@ -72,25 +72,25 @@ export function ResolutionForm({
     [variables]
   );
 
+  // Determine the current values for the form (either snapshot or defaults)
+  const formValues = useMemo(() => {
+    if (initialValues) {
+      return hydrateResolutionForm(variables, initialValues);
+    }
+    return defaultValues;
+  }, [variables, initialValues, defaultValues]);
+
   const form = useForm<Record<string, string>>({
-    defaultValues,
+    values: formValues,
   });
 
   const { control, reset, getValues } = form;
 
-  // Sync form defaults if content changes
-  useEffect(() => {
-    reset(defaultValues);
-  }, [defaultValues, reset]);
-
-  // Handle hydration from initialValues (snapshots)
+  // Handle toast notification for hydration
   useEffect(() => {
     if (initialValues && hydrationId !== lastHydrationId.current) {
       lastHydrationId.current = hydrationId;
-      const hydratedValues = hydrateResolutionForm(variables, initialValues);
-      reset(hydratedValues);
       
-      // Fix: Dismiss previous toasts to avoid overlap
       toast.dismiss('hydration-toast');
       toast.success('Snapshot Applied', {
         id: 'hydration-toast',
@@ -99,7 +99,7 @@ export function ResolutionForm({
         icon: <div className="h-4 w-4 rounded-full bg-primary" />,
       });
     }
-  }, [initialValues, hydrationId, variables, reset]);
+  }, [initialValues, hydrationId]);
 
   const handleCopy = useCallback(() => {
     const values = getValues();

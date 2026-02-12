@@ -143,13 +143,24 @@ describe('ResolutionForm', () => {
     const { rerender } = render(<ResolutionForm content={content} initialValues={initialValues} hydrationId={123} />);
     
     expect(screen.getByLabelText('name')).toHaveValue('Alice');
+    expect(toast.success).toHaveBeenCalledWith('Snapshot Applied', expect.any(Object));
     vi.clearAllMocks();
 
-    // Re-render with same hydrationId
+    // Re-render with same hydrationId but DIFFERENT values
+    // In the new implementation, the form will reset because the 'values' prop changed
     rerender(<ResolutionForm content={content} initialValues={{ name: 'Bob' }} hydrationId={123} />);
     
-    // Should NOT have updated
-    expect(screen.getByLabelText('name')).toHaveValue('Alice');
+    expect(screen.getByLabelText('name')).toHaveValue('Bob');
     expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('hydrates form fields on mount when initialValues are provided', async () => {
+    const content = 'Hello {{name}}!';
+    const initialValues = { name: 'Alice' };
+    
+    render(<ResolutionForm content={content} initialValues={initialValues} hydrationId={123} />);
+    
+    expect(screen.getByLabelText('name')).toHaveValue('Alice');
+    expect(toast.success).toHaveBeenCalledWith('Snapshot Applied', expect.any(Object));
   });
 });

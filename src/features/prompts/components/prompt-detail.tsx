@@ -10,6 +10,8 @@ import { restoreVersion } from '../actions/restore-version';
 import { toast } from 'sonner';
 import { ResolutionForm } from '@/features/resolution-engine/components/resolution-form';
 import { extractVariables } from '@/lib/utils/variable-parser';
+import { SnapshotList } from '@/features/snapshots/components/snapshot-list';
+import { PromptSnapshot } from '@/features/snapshots/types';
 
 interface PromptDetailProps {
   prompt: PromptWithLatestVersion | null;
@@ -17,7 +19,18 @@ interface PromptDetailProps {
 }
 
 export function PromptDetail({ prompt, className }: PromptDetailProps) {
-  const [activeTab, setActiveTab] = useState<'current' | 'history' | 'resolve'>('current');
+  const [activeTab, setActiveTab] = useState<'current' | 'history' | 'resolve' | 'snapshots'>('current');
+  const [snapshotRefreshKey, setSnapshotRefreshKey] = useState(0);
+  const [selectedSnapshot, setSelectedSnapshot] = useState<{ values: Record<string, string>, timestamp: number } | undefined>(undefined);
+
+  const handleSnapshotSaved = () => {
+    setSnapshotRefreshKey(prev => prev + 1);
+  };
+
+  const handleSnapshotSelect = (snapshot: PromptSnapshot) => {
+    setSelectedSnapshot({ values: snapshot.variables, timestamp: Date.now() });
+    setActiveTab('resolve');
+  };
   const [history, setHistory] = useState<PromptVersion[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
@@ -37,6 +50,7 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
     setActiveTab('current');
     setHistory([]);
     setHistoryError(null);
+    setSelectedSnapshot(undefined);
   }, [prompt?.id]);
 
   useEffect(() => {
@@ -130,6 +144,17 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
           >
             History
           </button>
+          <button
+            onClick={() => setActiveTab('snapshots')}
+            className={cn(
+              "pb-2 md:pb-3 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+              activeTab === 'snapshots' 
+                ? "border-primary text-primary" 
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Snapshots
+          </button>
         </div>
       </header>
       
@@ -144,11 +169,33 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
           <ScrollArea className="h-full">
             <ResolutionForm 
               content={prompt.latest_content} 
+              promptVersionId={prompt.latest_version_id}
+              onSnapshotSaved={handleSnapshotSaved}
+              initialValues={selectedSnapshot?.values}
+              hydrationId={selectedSnapshot?.timestamp}
               onValuesChange={(_values) => {
                 // Future: real-time preview in Story 3.3
               }}
             />
+            <div className="border-t border-border mt-4">
+              <h4 className="p-4 pb-0 text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wider">Saved Snapshots</h4>
+              <SnapshotList 
+                key={`resolve-${snapshotRefreshKey}`}
+                promptVersionId={prompt.latest_version_id} 
+                promptContent={prompt.latest_content}
+                onSelect={handleSnapshotSelect}
+              />
+            </div>
           </ScrollArea>
+        ) : activeTab === 'snapshots' ? (
+          <div className="h-full">
+             <SnapshotList 
+                key={`tab-${snapshotRefreshKey}`}
+                promptVersionId={prompt.latest_version_id} 
+                promptContent={prompt.latest_content}
+                onSelect={handleSnapshotSelect}
+              />
+          </div>
         ) : (
           <div className="h-full">
             {loadingHistory ? (

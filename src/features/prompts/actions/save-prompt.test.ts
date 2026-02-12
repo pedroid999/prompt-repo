@@ -68,7 +68,7 @@ describe('savePrompt', () => {
       version_note: 'Initial',
     };
 
-    const result = await savePrompt(input);
+    const result = await savePrompt(input) as any;
 
     expect(result.success).toBe(true);
     expect(result.data).toBeDefined();
@@ -97,7 +97,7 @@ describe('savePrompt', () => {
       error: new Error('Auth error'),
     });
 
-    const result = await savePrompt({ title: 'T', content: 'C' });
+    const result = await savePrompt({ title: 'T', content: 'C' }) as any;
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Unauthorized');
@@ -109,7 +109,7 @@ describe('savePrompt', () => {
       error: { message: 'DB Error' },
     });
 
-    const result = await savePrompt({ title: 'T', content: 'C' });
+    const result = await savePrompt({ title: 'T', content: 'C' }) as any;
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('DB Error');

@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { PromptList } from './prompt-list';
 import { PromptWithLatestVersion } from '../types';
 
-const mockPrompts: PromptWithLatestVersion[] = [
+const mockPrompts: any[] = [
   {
     id: '1',
     user_id: 'user1',

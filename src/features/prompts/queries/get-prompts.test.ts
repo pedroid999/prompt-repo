@@ -30,7 +30,7 @@ describe('getPrompts', () => {
     vi.clearAllMocks()
     mockSupabase.from.mockReturnValue(mockSupabase)
     // Default valid empty response
-    mockSupabase.data = []
+    (mockSupabase as any).data = []
     mockSupabase.error = null
   })
 

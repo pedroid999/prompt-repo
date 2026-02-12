@@ -6,6 +6,7 @@ export interface SearchResult {
   created_at: string
   updated_at: string
   latest_content: string
+  latest_version_id: string
   collection_ids: string[]
   rank: number
 }

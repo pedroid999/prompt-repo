@@ -7,12 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { extractVariables, resolvePrompt } from '@/lib/utils/variable-parser';
+import { hydrateResolutionForm } from '../utils/hydration';
 
 import { ResolvedPreview } from './resolved-preview';
+import { SaveSnapshotDialog } from '@/features/snapshots/components/save-snapshot-dialog';
+import { useState } from 'react';
 
 interface ResolutionFormProps {
   content: string;
+  promptVersionId?: string;
+  onSnapshotSaved?: () => void;
   onValuesChange?: (values: Record<string, string>) => void;
+  initialValues?: Record<string, string>;
+  hydrationId?: number;
 }
 
 // Internal component to handle real-time preview updates without re-rendering the whole form
@@ -47,7 +54,16 @@ function FormChangeNotifier({
   return null;
 }
 
-export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps) {
+export function ResolutionForm({ 
+  content, 
+  promptVersionId, 
+  onSnapshotSaved,
+  onValuesChange,
+  initialValues,
+  hydrationId
+}: ResolutionFormProps) {
+  const [isSnapshotDialogOpen, setIsSnapshotDialogOpen] = useState(false);
+  const lastHydrationId = useRef<number | undefined>(undefined);
   const variables = useMemo(() => extractVariables(content), [content]);
 
   // Memoize default values to prevent unnecessary re-renders
@@ -66,6 +82,24 @@ export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps)
   useEffect(() => {
     reset(defaultValues);
   }, [defaultValues, reset]);
+
+  // Handle hydration from initialValues (snapshots)
+  useEffect(() => {
+    if (initialValues && hydrationId !== lastHydrationId.current) {
+      lastHydrationId.current = hydrationId;
+      const hydratedValues = hydrateResolutionForm(variables, initialValues);
+      reset(hydratedValues);
+      
+      // Fix: Dismiss previous toasts to avoid overlap
+      toast.dismiss('hydration-toast');
+      toast.success('Snapshot Applied', {
+        id: 'hydration-toast',
+        description: 'Form fields have been populated from the snapshot.',
+        className: 'bg-background border-primary text-primary',
+        icon: <div className="h-4 w-4 rounded-full bg-primary" />,
+      });
+    }
+  }, [initialValues, hydrationId, variables, reset]);
 
   const handleCopy = useCallback(() => {
     const values = getValues();
@@ -92,18 +126,23 @@ export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps)
     });
   }, [content, getValues]);
 
-  // Keyboard shortcut for copy (Cmd+Enter / Ctrl+Enter)
+  // Keyboard shortcut for copy (Cmd+Enter / Ctrl+Enter) and Save Snapshot (Cmd+S / Ctrl+S)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         handleCopy();
       }
+      
+      if ((e.metaKey || e.ctrlKey) && e.key === 's' && promptVersionId) {
+        e.preventDefault();
+        setIsSnapshotDialogOpen(true);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCopy]);
+  }, [handleCopy, promptVersionId]);
 
   if (variables.length === 0) {
     return (
@@ -149,18 +188,39 @@ export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps)
             />
           ))}
 
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col gap-2">
             <Button
               type="submit"
               className="w-full h-9 md:h-10 bg-primary text-primary-foreground hover:bg-primary/90 text-sm"
             >
               Copy Resolved Prompt
             </Button>
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              Press <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground opacity-100">
-                <span className="text-xs">Cmd/Ctrl +</span> Enter
-              </kbd> to copy instantly
-            </p>
+            
+            {promptVersionId && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsSnapshotDialogOpen(true)}
+                className="w-full h-9 md:h-10 border-border text-foreground hover:bg-muted text-sm"
+              >
+                Save Snapshot
+              </Button>
+            )}
+
+            <div className="mt-2 text-center text-xs text-muted-foreground space-y-1">
+              <p>
+                Press <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                  <span className="text-[10px]">Cmd/Ctrl +</span> Enter
+                </kbd> to copy
+              </p>
+              {promptVersionId && (
+                <p>
+                  Press <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <span className="text-[10px]">Cmd/Ctrl +</span> S
+                  </kbd> to save snapshot
+                </p>
+              )}
+            </div>
           </div>
         </form>
       </Form>
@@ -169,6 +229,16 @@ export function ResolutionForm({ content, onValuesChange }: ResolutionFormProps)
         <h4 className="mb-2 text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wider">Preview</h4>
         <LiveResolvedPreview control={control} content={content} />
       </div>
+
+      {promptVersionId && (
+        <SaveSnapshotDialog
+          open={isSnapshotDialogOpen}
+          onOpenChange={setIsSnapshotDialogOpen}
+          promptVersionId={promptVersionId}
+          variables={getValues()}
+          onSuccess={onSnapshotSaved}
+        />
+      )}
     </div>
   );
 }

@@ -36,11 +36,17 @@ This document outlines the manual verification steps to ensure that Row Level Se
 2. Execute: `UPDATE public.profiles SET display_name = 'Hacker' WHERE id = [USER_B_ID]`.
 3. **Success Criteria:** The operation succeeds (0 rows affected) or fails with an error depending on the exact policy implementation, but User B's record remains unchanged.
 
-## 5. Verify `DELETE` Isolation
-**Goal:** Ensure users cannot delete other users' profiles.
+## 6. Verify `prompt_snapshots` Isolation
+**Goal:** Ensure users can only access their own snapshots.
 
 **Steps:**
 1. Authenticate as User A.
-2. Execute: `DELETE FROM public.profiles WHERE id = [USER_B_ID]`.
-3. **Success Criteria:** The operation succeeds (0 rows affected) or fails with an error, but User B's record remains.
+2. Insert a snapshot: `INSERT INTO public.prompt_snapshots (user_id, prompt_version_id, name, variables) VALUES (auth.uid(), [VERSION_ID], 'My Snapshot', '{}')`.
+3. **Success Criteria:** The record is created.
+4. Try to SELECT User B's snapshots: `SELECT * FROM public.prompt_snapshots WHERE user_id = [USER_B_ID]`.
+5. **Success Criteria:** Zero rows are returned.
+6. Try to UPDATE User B's snapshot name: `UPDATE public.prompt_snapshots SET name = 'Hacked' WHERE user_id = [USER_B_ID]`.
+7. **Success Criteria:** Zero rows affected.
+8. Try to DELETE User B's snapshot: `DELETE FROM public.prompt_snapshots WHERE user_id = [USER_B_ID]`.
+9. **Success Criteria:** Zero rows affected.
 

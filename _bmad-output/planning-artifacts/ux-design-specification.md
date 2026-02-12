@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/product-brief-prompt-repo-2026-02-07.md
@@ -341,3 +341,261 @@ PromptRepo employs a **Sidebar-First** responsive strategy. The primary interact
 - **Relative Units:** Use `rem` and `em` for typography and spacing to ensure scaling.
 - **Safe Tap Targets:** Minimum 44x44px for all mobile-responsive interactive elements.
 - **Focus Indicators:** High-visibility, non-destructive focus rings in "Crystal Blue" for all inputs and buttons.
+## Executive Summary (Phase 2 Revision)
+
+### Project Vision
+PromptRepo is evolving into a high-utility state machine for prompts. In addition to being a "Git for prompts," Phase 2 introduces **Prompt Snapshots**—the ability to freeze and reuse specific resolution states. This transforms PromptRepo from a template library into a library of "ready-to-run" prompt instances, drastically reducing repetitive data entry for the power user.
+
+### Target Users
+- **Primary Persona:** "Alex" (The Prompt Architect). Alex now needs more than just retrieval; he needs **state persistence**. Alex uses recurring prompts (e.g., "PR Review", "Refactor Specialist") where 80% of the variables remain constant across a project session. He requires a way to "bookmark" these filled states.
+
+### Key Design Challenges
+- **State vs. Template Clarity:** Distinguishing between a "Prompt Version" (template logic) and a "Snapshot" (resolved state with data) in a very narrow 400px sidebar.
+- **Diff Density:** Designing a readable, monospaced visual diff tool that works within sidebar constraints without overwhelming the user.
+- **Snapshot Discovery:** Integrating snapshot retrieval into the high-velocity retrieval loop (Search -> Resolve) without adding unnecessary clicks.
+
+### Design Opportunities
+- **The "Snapshot Shortcut":** Using snapshots as entry points. Selecting a snapshot bypasses the empty form and takes the user directly to a pre-filled resolution state.
+- **Visual Confidence:** Providing clear, color-coded diffs that reinforce the "engineered" feel of the tool, matching the Git-like mental model.
+
+## Core User Experience (Phase 2 Revision)
+
+### Defining Experience
+The defining experience of Phase 2 is **"The Snapshot Shortcut."** It extends the retrieval loop by allowing users to bypass the resolution form entirely. Selecting a snapshot from the search or list view should feel like "running a saved config"—taking the user directly to a resolved preview or a pre-filled form ready for instant copying.
+
+### Platform Strategy
+- **Context-Aware Keyboard Logic:** Phase 2 introduces `Cmd+S` as a primary shortcut within Resolution Mode to capture the current state as a snapshot.
+- **Sidecar Multi-Pane:** On wider sidebars (600px+), we will explore a dual-pane view for **Visual Diffs**, while maintaining a vertical stack for the standard 400px view.
+
+### Effortless Interactions
+- **Ghost Values:** When re-resolving a snapshot, the system provides "ghost" placeholders of the saved values, allowing the user to simply hit `Tab` to accept or start typing to overwrite.
+- **Snapshot-First Search:** Search results now prioritize "Active Snapshots" for a selected prompt, reducing the distance between search and copy.
+
+### Critical Success Moments
+- **The "Pre-fill" Win:** The moment Alex selects a "PR Review" snapshot and sees 5 complex fields instantly populated with the correct project context.
+- **The "Diff" Clarity:** Seeing a red/green line-by-line comparison of two prompt versions, instantly justifying why a restoration is needed.
+
+### Experience Principles
+- **State Persistence Over Logic:** Prioritize saving what the user *entered* as much as the template itself.
+- **Bypass Friction:** If a snapshot is selected, the UX should default to the fastest path to clipboard.
+- **Visual Evidence:** Use clear, Git-inspired visual diffs to eliminate the "What changed?" guesswork.
+
+## Desired Emotional Response (Phase 2 Revision)
+
+### Primary Emotional Goals
+The primary emotional goal for Phase 2 is **Systemic Mastery**. Users should feel that PromptRepo is not just a vault, but a context-aware assistant that respects the effort they've already put into resolving a prompt. 
+
+### Emotional Journey Mapping
+- **The Snapshot Save:** **Satisfying Closure.** Clicking `Cmd+S` to lock in a complex resolution state feels like completing a meaningful unit of work.
+- **The Re-resolution:** **Accelerated Flow.** Selecting a snapshot and seeing the form pre-fill feels like a "warp speed" button for the retrieval loop.
+- **The Visual Diff:** **Analytical Calm.** Replacing the anxiety of "What did I change?" with the absolute clarity of highlighted additions and deletions.
+
+### Micro-Emotions
+- **Mastery over Repetition:** The relief of knowing a complex input will never have to be manually entered twice.
+- **Visual Evidence:** The confidence gained from seeing explicit line-by-line changes in the version history.
+
+### Design Implications
+- **Mastery → Naming Protocol:** Snapshots should allow for custom aliases (e.g., "Project X Settings") to reinforce user ownership of the state.
+- **Confidence → Diff Syntax:** Use industry-standard Git colors (Emerald for additions, Rose for deletions) to provide instant semantic meaning.
+
+### Emotional Design Principles
+- **Honor Previous Effort:** Never make a user re-type what they've already resolved if a snapshot exists.
+- **Clarity over Memory:** Use visual diffs to eliminate the need for the user to remember version specifics.
+
+## UX Pattern Analysis & Inspiration (Phase 2 Revision)
+
+### Inspiring Products Analysis
+- **IntelliJ IDEA (Diff/Merge Tool):** Masterful at visualizing change logic. We will adopt its use of clear gutter indicators and background color-blocking to show exactly where lines were added, removed, or modified.
+- **Postman (Environments/Presets):** Excellent at handling "repeat values" across different requests. We will leverage this pattern for snapshots, where a snapshot isn't just a result, but a "saved configuration" of a template.
+
+### Transferable UX Patterns
+- **The "Gutter Map":** Using a thin vertical strip on the edge of the diff view to provide a "minimap" of changes, allowing Alex to jump to the next/previous difference in a long prompt.
+- **Hydrated Presets:** Treating a snapshot as a "Resolution Preset." Selecting it loads the template AND pre-fills the variable schema, mimicking how Postman environments pre-fill request headers.
+
+### Anti-Patterns to Avoid
+- **Static Results:** Avoid saving snapshots as "dead text" only. If Alex can't re-open the form with those values, the snapshot loses 80% of its utility for "tweaking."
+- **Over-Modalizing:** Don't force a merge conflict modal for every version restoration. Use the IntelliJ-style diff as a *preview* before the user commits to the restore.
+
+### Design Inspiration Strategy
+- **What to Adopt:** The IntelliJ-style vertical diff for our "History" comparisons. Even in 400px, a unified (inline) diff with IDEA-style gutter markers will feel familiar and professional.
+- **What to Adapt:** The "Template instance" model. Every snapshot is a living link back to its parent version, allowing for "Version-aware re-resolution."
+
+## Design System Foundation (Phase 2 Revision)
+
+### 1.1 Design System Choice
+**shadcn/ui + Tailwind CSS (Extended for Phase 2)**
+
+### Rationale for Selection
+Continuity with the established MVP stack ensures high development velocity and visual coherence. The modular nature of shadcn/ui is critical for building the custom, high-density interactions required for IntelliJ-style diffing and Snapshot hydration without the overhead of heavy third-party libraries.
+
+### Implementation Approach
+- **Base Components:** Leveraging `ScrollArea`, `Select`, and `ContextMenu` for Snapshot selection and management.
+- **Custom Patterns:** Developing a `UnifiedDiff` component using Tailwind grid/flex layouts to mimic the IntelliJ line-by-line comparison logic within 400px constraints.
+- **Hydration Logic:** Using `react-hook-form` to dynamically inject Snapshot values into the existing resolution engine.
+
+### Customization Strategy
+- **Diff Tokens:** Introducing semantic Tailwind tokens for `diff-add` (Emerald-500/20) and `diff-remove` (Rose-500/20) to match professional IDE visual logic.
+- **Snapshot Indicators:** Small, Monospace tags (`text-[10px]`) within prompt cards to indicate the presence of saved states.
+- **Gutter Navigation:** A custom scrollbar gutter within the Diff view to serve as a "minimap" for navigating large prompt changes.
+
+## Core User Experience (Phase 2 Revision)
+
+### 2.1 Defining Experience
+The defining interaction for Phase 2 is **Instant State Hydration**. It is the "warp speed" button for retrieval. By selecting a Snapshot instead of a raw Prompt, the user bypasses the cognitive load of data entry, jumping straight into a pre-filled, ready-to-copy state.
+
+### 2.2 User Mental Model
+Alex views Snapshots as **"Hydrated Templates."** He expects the system to remember his project-specific context (e.g., "The Fuji Project Settings") so he can reuse them across multiple prompts. For Diffs, his mental model is the **IntelliJ Merge Tool**, where changes are objective, color-coded, and navigated via a gutter map.
+
+### 2.3 Success Criteria
+- **Hydration Speed:** Zero perceived lag between Snapshot selection and form population.
+- **Diff Accuracy:** 100% fidelity in showing additions vs. deletions in the Monospace view.
+- **Entry Reduction:** Achieving a 30%+ reduction in keystrokes for recurring prompt resolutions.
+
+### 2.4 Novel UX Patterns
+- **Just-in-Time Hydration:** A pattern where selecting a nested search result (the Snapshot) triggers a specific state injection into the existing Resolution Engine.
+- **Compact Unified Diff:** Adapting the complex "side-by-side" IDE diff logic into a single-column "Unified" view that remains readable at 400px.
+
+### 2.5 Experience Mechanics
+1. **Initiation:** Alex invokes the shortcut via `Cmd+K` and sees nested snapshots under prompt titles, or hits `Cmd+S` within an active resolution to freeze the current state.
+2. **Interaction:** Selecting a snapshot swaps the view to the Resolution Form, instantly populating all fields with saved values. The cursor is auto-focused on the first field for quick "delta" edits.
+3. **Feedback:** Instant feedback via "Snapshot Saved" toasts and real-time updates to the Monospaced Preview block.
+4. **Completion:** One click or `Cmd+Enter` copies the fully resolved string to the clipboard.
+
+## Visual Design Foundation (Phase 2 Revision)
+
+### Color System
+- **Base Theme:** Kanagawa (Dark).
+- **Diff Additions:** Background: `rgba(16, 185, 129, 0.2)` (Emerald); Border/Gutter: `#10b981`.
+- **Diff Deletions:** Background: `rgba(244, 63, 94, 0.2)` (Rose); Border/Gutter: `#f43f5e`.
+- **Snapshot Selection:** Active Preset: `#7e9cd8` (Crystal Blue) with a subtle outer glow.
+
+### Typography System
+- **Geist Mono (Primary):** Mandatory for all prompt comparisons and variable input fields.
+- **Hierarchy:** 
+  - Snapshot Name: 14px Semi-bold (Geist Sans)
+  - Diff Content: 12px Regular (Geist Mono, 1.6 line-height for readability)
+  - Gutter Symbols: 10px Bold (+ / -)
+
+### Spacing & Layout Foundation
+- **The "Gutter Gutter":** A dedicated 24px vertical area on the left of the Unified Diff for line numbers and change symbols.
+- **Dynamic Widths:** 
+  - **Compact (400px):** Unified Diff (interleaved additions/deletions).
+  - **Expanded (600px+):** Side-by-side Diff (mirroring IntelliJ IDEA interaction).
+- **Z-Index Strategy:** Snapshot selection overlays must not obscure the "Resolved Preview" component.
+
+### Accessibility Considerations
+- **Symbolic Redundancy:** Color-coded diffs must be accompanied by '+' and '-' symbols in the gutter.
+- **Contrast Ratios:** Ensure Emerald and Rose highlights maintain a 4.5:1 ratio against the Dragon surface for readability of monospaced text.
+
+## Design Direction Decision (Phase 2 Revision)
+
+### Design Directions Explored
+Explored four primary models: Hydrated Tabs, Nested Command Palette, Timeline Compare, and Quick-Save Floating Actions. The focus was on balancing high-density information with keyboard-first navigation.
+
+### Chosen Direction
+**The "Command-First Hydrator"**
+This direction prioritizes the global search palette (`Cmd+K`) as the primary entry point for Snapshots and uses an overlay model for IntelliJ-style diffs to preserve spatial focus.
+
+### Design Rationale
+For a power-user persona (Alex), navigation is a cost. By nesting Snapshots within the Command Palette, we reduce the "click-depth" to zero. Using an overlay for Diffs allows for deep analytical work without breaking the user's primary library context, mirroring the "Quick Definition" behavior in professional IDEs like IntelliJ or VS Code.
+
+### Implementation Approach
+- **Nested Search:** Extend the `cmdk` component to support hierarchical results (Prompt > Snapshot).
+- **State Injection:** Use a "Snapshot Provider" to hydrate the React Hook Form state upon selection.
+- **Escape-Hatch Diffs:** Implement the Diff Viewer as a focused modal/overlay that is triggered and dismissed via single-key shortcuts (`D` to view, `Esc` to close).
+
+## User Journey Flows (Phase 2 Revision)
+
+### Journey 4: The Snapshot Shortcut
+Goal: Move from search to resolved prompt in under 5 seconds using saved states.
+
+```mermaid
+graph TD
+    A[Cmd+K Palette] --> B[Search: 'PR Review']
+    B --> C{Results Found?}
+    C -->|Yes| D[Show Prompt + Indented Snapshots]
+    D --> E[Select: 'Project Alpha Snapshot']
+    E --> F[Inject State into Resolution Engine]
+    F --> G[Focus: 1st Empty or Highlighted Field]
+    G --> H[Cmd+Enter: Copy to Clipboard]
+    H --> I[Success Toast]
+```
+
+### Journey 5: The Analytical Deep-Dive
+Goal: Precisely compare version changes without losing library context.
+
+```mermaid
+graph TD
+    A[Prompt Detail] --> B[Open History Tab]
+    B --> C[Select Two Versions]
+    C --> D[Shortcut: 'D']
+    D --> E[Open Unified Diff Overlay]
+    E --> F[Navigate via Gutter Map]
+    F --> G[Esc: Close Overlay]
+```
+
+### Journey Patterns
+- **The "Nested Result" Pattern:** Using hierarchical search results to expose sub-resources (Snapshots) directly in the command palette.
+- **The "Overlay Drill-down" Pattern:** Triggering detailed analytical views (Diffs) as non-navigational overlays to maintain the user's position in the primary workflow.
+
+### Flow Optimization Principles
+- **Bypass Logic:** Defaulting to the most "hydrated" state possible to minimize data entry.
+- **Shortcut Mirroring:** Ensuring that every visual action (Save, Diff, Close) has a 1:1 mapping to a standard professional keyboard shortcut (Cmd+S, D, Esc).
+
+## Component Strategy (Phase 2 Revision)
+
+### Design System Components
+- **Command Palette (Extended):** Supporting hierarchical grouping for nested Snapshots.
+- **Form (Extended):** Managing hydration states and ghost placeholders.
+- **ScrollArea (Extended):** Integrating gutter navigation for analytical views.
+
+### Custom Components
+
+#### 1. UnifiedDiffViewer
+**Purpose:** High-fidelity, line-by-line comparison between prompt versions.
+**Anatomy:** A three-column grid (Gutter Map | Line Numbers | Monospace Content).
+**Interaction:** Shortcut `D` to trigger; color-blocked additions/deletions; `Esc` to dismiss.
+
+#### 2. SnapshotCommandItem
+**Purpose:** Expose saved states directly in the global retrieval palette.
+**Anatomy:** Indented sub-item under a Prompt result; includes a "Snapshot" icon and custom alias.
+**States:** Highlighted (Dragon bg), Inactive (Fuji text).
+
+#### 3. SnapshotSelector
+**Purpose:** Rapid preset switching within an active Resolution session.
+**Interaction:** Shortcut `Cmd+J` to invoke; provides a filtered list of Snapshots for the current prompt.
+**Behavior:** Selecting a preset instantly hydrates all form fields without page reload.
+
+### Component Implementation Strategy
+- **Token Consistency:** Custom components must inherit Kanagawa tokens (`#1f1f28`, `#7e9cd8`) to maintain visual unity.
+- **Keyboard-First:** Every custom component must have a documented primary and secondary keyboard shortcut.
+- **State-Aware:** Use React context to manage Snapshot hydration across the Resolution Engine.
+
+### Implementation Roadmap
+- **Phase 1 (Critical):** `UnifiedDiffViewer` and `SnapshotCommandItem`. Essential for the "Retrieve and Compare" cycle.
+- **Phase 2 (Optimization):** `SnapshotSelector`. Reduces friction during multi-project resolution.
+- **Phase 3 (Polishing):** `DiffGutterMap`. Advanced navigation for long, complex prompt templates.
+
+## UX Consistency Patterns (Phase 2 Revision)
+
+### Button Hierarchy
+- **Primary (Crystal Blue):** `Save Snapshot` - High-visibility action in Resolution Mode.
+- **Secondary (Suminkashi):** `Compare Versions` - Subtle action in the History timeline.
+- **Contextual (Spring Green):** `Restore Version` - Primary resolution within the Diff Viewer.
+
+### Feedback Patterns
+- **Success (Toast):** "Snapshot [Alias] saved successfully." (Spring Green).
+- **Modification Indicator:** A Monospace asterisk (`*`) next to the Snapshot name in the Resolution header indicates unsaved changes to the current preset.
+
+### Form Patterns
+- **Hydrated Placeholders:** Variable fields show Snapshot values in Fuji (#dcd7ba) with 70% opacity. Entering text transitions the field to 100% opacity.
+- **State Preservation:** Navigating away from a "dirty" Snapshot resolution prompts a "Save changes?" mini-dialog.
+
+### Navigation Patterns
+- **The "D" Key:** Global hotkey for "Diff" when a version or prompt is focused in the library.
+- **The "J" Key:** Contextual hotkey within Resolution Mode to open the Snapshot Preset switcher.
+- **Hierarchy:** Consistent use of indentation in lists to show the Prompt -> Snapshot relationship.
+
+### Additional Patterns
+- **The IntelliJ Gutter:** A dedicated 24px vertical strip in the DiffViewer showing semantic line status (+/-) and color-blocked highlights.
+- **Overlay Focus:** All analytical overlays (Diffs, Snapshot Management) trap focus and are dismissible via `Esc`, matching IDE "Quick View" patterns.

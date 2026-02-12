@@ -21,7 +21,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-const mockPrompt: PromptWithLatestVersion = {
+const mockPrompt: any = {
   id: '1',
   user_id: 'user1',
   title: 'Prompt One',

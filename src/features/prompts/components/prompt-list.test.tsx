@@ -63,7 +63,7 @@ describe('PromptList', () => {
     expect(screen.getByText('No prompts found.')).toBeInTheDocument();
   });
 
-  it('highlights the selected prompt', () => {
+  it('highlights the selected prompt with an accent border', () => {
     const { container } = render(
       <PromptList
         prompts={mockPrompts}
@@ -72,9 +72,9 @@ describe('PromptList', () => {
       />
     );
 
-    // Finding the card by checking its classes
-    const cards = container.querySelectorAll('.cursor-pointer');
-    expect(cards[0].className).toContain('bg-[#2D4F67]');
-    expect(cards[1].className).toContain('bg-[#1F1F28]');
+    // Selected item has the accent border class; non-selected has transparent border
+    const buttons = container.querySelectorAll('button[type="button"]');
+    expect(buttons[0].className).toContain('border-l-[#7E9CD8]');
+    expect(buttons[1].className).toContain('border-l-transparent');
   });
 });

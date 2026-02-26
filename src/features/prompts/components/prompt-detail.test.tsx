@@ -4,6 +4,11 @@ import { PromptDetail } from './prompt-detail';
 import { PromptWithLatestVersion, PromptVersion } from '../types';
 import * as queryModule from '../queries/get-prompt-history';
 
+// Mock next/navigation (useRouter added for router.refresh after save)
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({ refresh: vi.fn() })),
+}));
+
 // Mock Server Actions/Queries
 vi.mock('../queries/get-prompt-history', () => ({
   getPromptHistory: vi.fn(),

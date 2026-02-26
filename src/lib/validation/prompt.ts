@@ -8,3 +8,10 @@ export const promptCreateSchema = z.object({
 });
 
 export type PromptCreateInput = z.infer<typeof promptCreateSchema>;
+
+export const promptMetadataSchema = promptCreateSchema.pick({
+  title: true,
+  description: true,
+});
+
+export type PromptMetadataInput = z.infer<typeof promptMetadataSchema>;

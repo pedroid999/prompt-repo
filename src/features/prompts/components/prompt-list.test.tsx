@@ -1,7 +1,21 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { PromptList } from './prompt-list';
-import { PromptWithLatestVersion } from '../types';
+
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({ refresh: vi.fn() })),
+}));
+
+vi.mock('@/features/collections/actions', () => ({
+  addToCollection: vi.fn(),
+  removeFromCollection: vi.fn(),
+}));
+
+vi.mock('@/features/prompts/actions/manage-prompt', () => ({
+  archivePrompt: vi.fn(),
+  restorePrompt: vi.fn(),
+  deletePrompt: vi.fn(),
+}));
 
 const mockPrompts: any[] = [
   {
@@ -9,6 +23,7 @@ const mockPrompts: any[] = [
     user_id: 'user1',
     title: 'Prompt One',
     description: 'Description One',
+    archived_at: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     latest_content: 'Content One',
@@ -18,6 +33,7 @@ const mockPrompts: any[] = [
     user_id: 'user1',
     title: 'Prompt Two',
     description: 'Description Two',
+    archived_at: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     latest_content: 'Content Two',

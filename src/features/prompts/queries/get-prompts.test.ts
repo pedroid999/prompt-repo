@@ -5,6 +5,8 @@ const mockSupabase = {
   from: vi.fn(),
   select: vi.fn(),
   eq: vi.fn(),
+  is: vi.fn(),
+  not: vi.fn(),
   order: vi.fn(),
   data: null,
   error: null,
@@ -13,6 +15,8 @@ const mockSupabase = {
 mockSupabase.from.mockReturnValue(mockSupabase)
 mockSupabase.select.mockReturnValue(mockSupabase)
 mockSupabase.eq.mockReturnValue(mockSupabase)
+mockSupabase.is.mockReturnValue(mockSupabase)
+mockSupabase.not.mockReturnValue(mockSupabase)
 mockSupabase.order.mockReturnValue(mockSupabase) 
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -29,6 +33,8 @@ describe('getPrompts', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockSupabase.from.mockReturnValue(mockSupabase)
+    mockSupabase.is.mockReturnValue(mockSupabase)
+    mockSupabase.not.mockReturnValue(mockSupabase)
     // Default valid empty response
     (mockSupabase as any).data = []
     mockSupabase.error = null
@@ -43,6 +49,7 @@ describe('getPrompts', () => {
     // We expect the select string NOT to have the inner join
     const selectCall = mockSupabase.select.mock.calls[0][0]
     expect(selectCall).not.toContain('collection_prompts!inner')
+    expect(mockSupabase.is).toHaveBeenCalledWith('archived_at', null)
   })
 
   it('filters by collectionId', async () => {
@@ -54,6 +61,15 @@ describe('getPrompts', () => {
     const selectCall = mockSupabase.select.mock.calls[0][0]
     expect(selectCall).toContain('collection_prompts!inner')
     expect(mockSupabase.eq).toHaveBeenCalledWith('collection_prompts.collection_id', 'col-1')
+  })
+
+  it('filters archived prompts when archived status is requested', async () => {
+    mockSupabase.order.mockResolvedValue({ data: [], error: null })
+
+    await getPrompts(undefined, 'archived')
+
+    expect(mockSupabase.not).toHaveBeenCalledWith('archived_at', 'is', null)
+    expect(mockSupabase.is).not.toHaveBeenCalled()
   })
 
   it('maps collection_ids correctly', async () => {

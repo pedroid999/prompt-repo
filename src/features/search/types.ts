@@ -3,6 +3,7 @@ export interface SearchResult {
   user_id: string
   title: string
   description: string | null
+  archived_at: string | null
   created_at: string
   updated_at: string
   latest_content: string

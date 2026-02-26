@@ -9,25 +9,36 @@ import { getCollections } from "@/features/collections/actions";
 import { MobileNav } from '@/components/features/navigation/mobile-nav';
 import { Plus } from 'lucide-react';
 import { PromptWithLatestVersion } from '@/features/prompts/types';
+import { cn } from '@/lib/utils';
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; id?: string; collectionId?: string }>;
+  searchParams: Promise<{ q?: string; id?: string; collectionId?: string; view?: string }>;
 }) {
-  const { q: query, id: promptId, collectionId } = await searchParams;
+  const { q: query, id: promptId, collectionId, view } = await searchParams;
+  const promptView = view === 'archived' ? 'archived' : 'active';
   let prompts: PromptWithLatestVersion[];
 
   if (query) {
-    const { data, error } = await searchPrompts(query, { collectionId });
+    const { data, error } = await searchPrompts(query, { collectionId, archived: promptView === 'archived' });
     // Transform SearchResult[] to PromptWithLatestVersion[] if needed
     // Assuming search_prompts RPC already returns collection_ids after DB fix or casting
     prompts = (data as PromptWithLatestVersion[]) || [];
   } else {
-    prompts = await getPrompts(collectionId);
+    prompts = await getPrompts(collectionId, promptView);
   }
 
   const { data: collections } = await getCollections();
+  const buildHomeHref = (nextView: 'active' | 'archived') => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (promptId) params.set('id', promptId);
+    if (collectionId) params.set('collectionId', collectionId);
+    if (nextView === 'archived') params.set('view', 'archived');
+    const search = params.toString();
+    return search ? `/?${search}` : '/';
+  };
 
   return (
     <div className="flex h-full flex-col bg-[#16161D]">
@@ -38,6 +49,36 @@ export default async function Home({
           <div className="flex-1 min-w-0 max-w-md">
             <SearchBar />
           </div>
+        </div>
+        <div className="hidden sm:flex items-center rounded-md border border-[#2D4F67] p-0.5">
+          <Link href={buildHomeHref('active')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-7 px-2 text-xs',
+                promptView === 'active'
+                  ? 'bg-[#2D4F67] text-[#DCD7BA] hover:bg-[#2D4F67]'
+                  : 'text-[#727169] hover:text-[#DCD7BA] hover:bg-transparent'
+              )}
+            >
+              Active
+            </Button>
+          </Link>
+          <Link href={buildHomeHref('archived')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-7 px-2 text-xs',
+                promptView === 'archived'
+                  ? 'bg-[#2D4F67] text-[#DCD7BA] hover:bg-[#2D4F67]'
+                  : 'text-[#727169] hover:text-[#DCD7BA] hover:bg-transparent'
+              )}
+            >
+              Archived
+            </Button>
+          </Link>
         </div>
         <div className="flex items-center gap-1 md:gap-4 shrink-0">
           <Link href="/prompts/create">
@@ -58,6 +99,7 @@ export default async function Home({
         <PromptsContainer 
           prompts={prompts} 
           collections={collections || []}
+          view={promptView}
           initialSelectedId={promptId} 
         />
       </main>

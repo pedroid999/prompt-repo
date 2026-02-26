@@ -7,6 +7,7 @@ interface DbPromptResponse {
   user_id: string;
   title: string;
   description: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
   prompt_versions: {
@@ -19,7 +20,10 @@ interface DbPromptResponse {
   }[];
 }
 
-export async function getPrompts(collectionId?: string): Promise<PromptWithLatestVersion[]> {
+export async function getPrompts(
+  collectionId?: string,
+  status: 'active' | 'archived' = 'active',
+): Promise<PromptWithLatestVersion[]> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -28,6 +32,7 @@ export async function getPrompts(collectionId?: string): Promise<PromptWithLates
       user_id,
       title,
       description,
+      archived_at,
       created_at,
       updated_at,
       prompt_versions (
@@ -40,6 +45,12 @@ export async function getPrompts(collectionId?: string): Promise<PromptWithLates
 
   if (collectionId) {
     queryBuilder = queryBuilder.eq('collection_prompts.collection_id', collectionId);
+  }
+
+  if (status === 'archived') {
+    queryBuilder = queryBuilder.not('archived_at', 'is', null);
+  } else {
+    queryBuilder = queryBuilder.is('archived_at', null);
   }
 
   const { data, error } = await queryBuilder.order('created_at', { ascending: false });
@@ -63,6 +74,7 @@ export async function getPrompts(collectionId?: string): Promise<PromptWithLates
       user_id: prompt.user_id,
       title: prompt.title,
       description: prompt.description,
+      archived_at: prompt.archived_at,
       created_at: prompt.created_at,
       updated_at: prompt.updated_at,
       latest_content: latestVersion?.content || '',

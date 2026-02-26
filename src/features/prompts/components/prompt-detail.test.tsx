@@ -18,6 +18,14 @@ vi.mock('../actions/restore-version', () => ({
   restoreVersion: vi.fn(),
 }));
 
+vi.mock('../actions/save-new-version', () => ({
+  saveNewVersion: vi.fn(),
+}));
+
+vi.mock('../actions/manage-prompt', () => ({
+  updatePromptMetadata: vi.fn(),
+}));
+
 // Mock Sonner Toast
 vi.mock('sonner', () => ({
   toast: {
@@ -33,7 +41,9 @@ const mockPrompt: any = {
   description: 'Description One',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
+  archived_at: null,
   latest_content: 'Content One',
+  latest_version_id: 'v-latest',
 };
 
 const mockHistory: PromptVersion[] = [
@@ -84,5 +94,24 @@ describe('PromptDetail', () => {
     render(<PromptDetail prompt={null} />);
 
     expect(screen.getByText('Select a prompt to view details')).toBeInTheDocument();
+  });
+
+  it('allows editing metadata fields', async () => {
+    const managePromptModule = await import('../actions/manage-prompt');
+    vi.mocked(managePromptModule.updatePromptMetadata).mockResolvedValue({ success: true });
+
+    render(<PromptDetail prompt={mockPrompt} />);
+
+    fireEvent.click(screen.getByText('Edit Details'));
+    fireEvent.change(screen.getByPlaceholderText('Prompt title'), { target: { value: 'Renamed Prompt' } });
+    fireEvent.change(screen.getByPlaceholderText('Description (optional)'), { target: { value: 'Updated desc' } });
+    fireEvent.click(screen.getByText('Save Details'));
+
+    await waitFor(() => {
+      expect(managePromptModule.updatePromptMetadata).toHaveBeenCalledWith('1', {
+        title: 'Renamed Prompt',
+        description: 'Updated desc',
+      });
+    });
   });
 });

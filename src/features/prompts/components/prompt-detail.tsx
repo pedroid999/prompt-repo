@@ -12,12 +12,13 @@ import { PromptHistory } from './prompt-history';
 import { getPromptHistory } from '../queries/get-prompt-history';
 import { restoreVersion } from '../actions/restore-version';
 import { saveNewVersion } from '../actions/save-new-version';
+import { updatePromptMetadata } from '../actions/manage-prompt';
 import { toast } from 'sonner';
 import { ResolutionForm } from '@/features/resolution-engine/components/resolution-form';
 import { extractVariables } from '@/lib/utils/variable-parser';
 import { SnapshotList } from '@/features/snapshots/components/snapshot-list';
 import { PromptSnapshot } from '@/features/snapshots/types';
-import { Pencil, X, Save } from 'lucide-react';
+import { Pencil, X, Save, Check } from 'lucide-react';
 
 interface PromptDetailProps {
   prompt: PromptWithLatestVersion | null;
@@ -35,6 +36,10 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
   const [editContent, setEditContent] = useState('');
   const [editVersionNote, setEditVersionNote] = useState('');
   const [isSavingVersion, setIsSavingVersion] = useState(false);
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isSavingMetadata, setIsSavingMetadata] = useState(false);
 
   const handleSnapshotSaved = () => {
     setSnapshotRefreshKey(prev => prev + 1);
@@ -62,6 +67,7 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
     setHistoryError(null);
     setSelectedSnapshot(undefined);
     setIsEditing(false);
+    setIsEditingMetadata(false);
   }, [prompt?.id]);
 
   useEffect(() => {
@@ -143,6 +149,43 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
     }
   };
 
+  const handleStartMetadataEdit = () => {
+    if (!prompt) return;
+    setEditTitle(prompt.title);
+    setEditDescription(prompt.description ?? '');
+    setIsEditingMetadata(true);
+  };
+
+  const handleCancelMetadataEdit = () => {
+    setIsEditingMetadata(false);
+    setEditTitle('');
+    setEditDescription('');
+  };
+
+  const handleSaveMetadata = async () => {
+    if (!prompt) return;
+
+    setIsSavingMetadata(true);
+    try {
+      const result = await updatePromptMetadata(prompt.id, {
+        title: editTitle,
+        description: editDescription,
+      });
+
+      if (result.success) {
+        toast.success('Prompt details updated');
+        setIsEditingMetadata(false);
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error('Failed to update prompt details');
+    } finally {
+      setIsSavingMetadata(false);
+    }
+  };
+
   if (!prompt) {
     return (
       <div className={cn('flex h-full items-center justify-center bg-sidebar text-muted-foreground', className)}>
@@ -157,11 +200,68 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
         <div className="md:hidden h-10 w-10 shrink-0" />
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{prompt.title}</h1>
-            {prompt.description && (
-              <p className="mt-1 md:mt-2 text-xs md:text-base text-muted-foreground line-clamp-2">{prompt.description}</p>
+            {isEditingMetadata ? (
+              <div className="space-y-2">
+                <Input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Prompt title"
+                  className="h-8 md:h-9 text-sm bg-background border-border"
+                  autoFocus
+                />
+                <Textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Description (optional)"
+                  className="min-h-[64px] text-xs md:text-sm bg-background border-border resize-none"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSaveMetadata}
+                    disabled={isSavingMetadata || !editTitle.trim()}
+                    className="h-7 gap-1.5 text-xs"
+                  >
+                    <Check className="h-3 w-3" />
+                    {isSavingMetadata ? 'Saving...' : 'Save Details'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelMetadataEdit}
+                    disabled={isSavingMetadata}
+                    className="h-7 text-xs"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{prompt.title}</h1>
+                  {prompt.archived_at && (
+                    <span className="shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-300">
+                      Archived
+                    </span>
+                  )}
+                </div>
+                {prompt.description && (
+                  <p className="mt-1 md:mt-2 text-xs md:text-base text-muted-foreground line-clamp-2">{prompt.description}</p>
+                )}
+              </>
             )}
           </div>
+          {!isEditingMetadata && !isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleStartMetadataEdit}
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Edit Details
+            </Button>
+          )}
         </div>
 
         <div className="flex items-center gap-4 md:gap-6 mt-4 md:mt-6 overflow-x-auto no-scrollbar">

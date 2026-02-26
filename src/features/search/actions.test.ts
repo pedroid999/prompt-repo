@@ -32,7 +32,8 @@ describe('Search Actions', () => {
     expect(mockSupabase.rpc).toHaveBeenCalledWith('search_prompts', {
       query_text: 'test',
       filter_user_id: null,
-      filter_collection_id: null
+      filter_collection_id: null,
+      filter_archived: null,
     })
     expect(result.data).toHaveLength(1)
     expect(result.data?.[0].title).toBe('Test Prompt')
@@ -50,7 +51,21 @@ describe('Search Actions', () => {
     expect(mockSupabase.rpc).toHaveBeenCalledWith('search_prompts', {
       query_text: 'test',
       filter_user_id: userId,
-      filter_collection_id: null
+      filter_collection_id: null,
+      filter_archived: null,
+    })
+  })
+
+  it('passes archived filter when requested', async () => {
+    mockSupabase.rpc.mockResolvedValue({ data: [], error: null })
+
+    await searchPrompts('test', { archived: true })
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('search_prompts', {
+      query_text: 'test',
+      filter_user_id: null,
+      filter_collection_id: null,
+      filter_archived: true,
     })
   })
 

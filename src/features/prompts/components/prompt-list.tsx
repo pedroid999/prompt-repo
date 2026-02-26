@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 import { PromptWithLatestVersion } from '../types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -13,8 +15,10 @@ import {
   ContextMenuItem,
   ContextMenuCheckboxItem,
   ContextMenuTrigger,
+  ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { addToCollection, removeFromCollection } from '@/features/collections/actions';
+import { archivePrompt, deletePrompt, restorePrompt } from '@/features/prompts/actions/manage-prompt';
 import { toast } from 'sonner';
 
 interface Collection {
@@ -25,6 +29,7 @@ interface Collection {
 interface PromptListProps {
   prompts: PromptWithLatestVersion[];
   collections?: Collection[];
+  view?: 'active' | 'archived';
   selectedId?: string;
   onSelect: (prompt: PromptWithLatestVersion) => void;
   className?: string;
@@ -42,7 +47,16 @@ function getRelativeDate(dateString: string) {
   return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
 }
 
-export function PromptList({ prompts, collections = [], selectedId, onSelect, className }: PromptListProps) {
+export function PromptList({
+  prompts,
+  collections = [],
+  view = 'active',
+  selectedId,
+  onSelect,
+  className,
+}: PromptListProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const handleToggleCollection = async (promptId: string, collectionId: string, isAdded: boolean) => {
     const result = isAdded
@@ -53,16 +67,60 @@ export function PromptList({ prompts, collections = [], selectedId, onSelect, cl
       toast.error(result.error);
     } else {
       toast.success(isAdded ? "Removed from collection" : "Added to collection");
+      router.refresh();
     }
+  };
+
+  const handleArchive = async (promptId: string) => {
+    startTransition(async () => {
+      const result = await archivePrompt(promptId);
+      if (result.success) {
+        toast.success('Prompt archived');
+        router.refresh();
+        return;
+      }
+      toast.error(result.error);
+    });
+  };
+
+  const handleRestore = async (promptId: string) => {
+    startTransition(async () => {
+      const result = await restorePrompt(promptId);
+      if (result.success) {
+        toast.success('Prompt restored');
+        router.refresh();
+        return;
+      }
+      toast.error(result.error);
+    });
+  };
+
+  const handleDelete = async (promptId: string) => {
+    if (!window.confirm('Delete this prompt permanently? This removes all versions and snapshots.')) {
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await deletePrompt(promptId);
+      if (result.success) {
+        toast.success('Prompt deleted permanently');
+        router.refresh();
+        return;
+      }
+      toast.error(result.error);
+    });
   };
 
   return (
     <div className={cn('flex flex-col h-full bg-[#16161D]', className)}>
       {/* Section header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#2D4F67]/60 shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-[#727169]">
-          Library
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#727169]">
+            {view === 'archived' ? 'Archived' : 'Library'}
+          </span>
+          {isPending && <span className="text-[10px] text-[#727169]">Updating…</span>}
+        </div>
         {prompts.length > 0 && (
           <span className="text-[10px] font-medium text-[#727169] bg-[#2D4F67]/40 px-1.5 py-0.5 rounded-full tabular-nums">
             {prompts.length}
@@ -152,6 +210,40 @@ export function PromptList({ prompts, collections = [], selectedId, onSelect, cl
                       })}
                     </ContextMenuSubContent>
                   </ContextMenuSub>
+                  <ContextMenuSeparator className="bg-[#2D4F67]/60" />
+                  {(prompt.archived_at ?? null) ? (
+                    <>
+                      <ContextMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          handleRestore(prompt.id);
+                        }}
+                        className="focus:bg-[#2D4F67] focus:text-[#DCD7BA]"
+                      >
+                        Restore Prompt
+                      </ContextMenuItem>
+                      <ContextMenuItem
+                        variant="destructive"
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          handleDelete(prompt.id);
+                        }}
+                        className="focus:bg-[#2D4F67] focus:text-[#DCD7BA]"
+                      >
+                        Delete Permanently
+                      </ContextMenuItem>
+                    </>
+                  ) : (
+                    <ContextMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        handleArchive(prompt.id);
+                      }}
+                      className="focus:bg-[#2D4F67] focus:text-[#DCD7BA]"
+                    >
+                      Archive Prompt
+                    </ContextMenuItem>
+                  )}
                 </ContextMenuContent>
               </ContextMenu>
             );

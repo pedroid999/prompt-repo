@@ -9,9 +9,13 @@ const searchSchema = z.object({
   query: z.string().min(1).max(500),
   userId: z.string().uuid().optional(),
   collectionId: z.string().uuid().optional(),
+  archived: z.boolean().optional(),
 })
 
-export async function searchPrompts(query: string, options?: { userId?: string; collectionId?: string }) {
+export async function searchPrompts(
+  query: string,
+  options?: { userId?: string; collectionId?: string; archived?: boolean },
+) {
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
 
@@ -30,7 +34,8 @@ export async function searchPrompts(query: string, options?: { userId?: string; 
   const { data, error } = await supabase.rpc('search_prompts', {
     query_text: query,
     filter_user_id: options?.userId || null,
-    filter_collection_id: options?.collectionId || null
+    filter_collection_id: options?.collectionId || null,
+    filter_archived: typeof options?.archived === 'boolean' ? options.archived : null,
   })
 
   if (error) {

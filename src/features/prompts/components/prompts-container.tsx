@@ -14,10 +14,16 @@ interface Collection {
 interface PromptsContainerProps {
   prompts: PromptWithLatestVersion[];
   collections?: Collection[];
+  view?: 'active' | 'archived';
   initialSelectedId?: string;
 }
 
-export function PromptsContainer({ prompts, collections = [], initialSelectedId }: PromptsContainerProps) {
+export function PromptsContainer({
+  prompts,
+  collections = [],
+  view = 'active',
+  initialSelectedId,
+}: PromptsContainerProps) {
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithLatestVersion | null>(() => {
     if (initialSelectedId) {
       const found = prompts.find(p => p.id === initialSelectedId);
@@ -28,12 +34,22 @@ export function PromptsContainer({ prompts, collections = [], initialSelectedId 
 
   // Sync selectedPrompt with updated prompts data (e.g. after restore)
   useEffect(() => {
-    if (selectedPrompt) {
-      const updated = prompts.find(p => p.id === selectedPrompt.id);
-      if (updated) {
+    if (!selectedPrompt) {
+      if (prompts.length > 0) {
+        setSelectedPrompt(prompts[0]);
+      }
+      return;
+    }
+
+    const updated = prompts.find((p) => p.id === selectedPrompt.id);
+    if (updated) {
+      if (updated !== selectedPrompt) {
         setSelectedPrompt(updated);
       }
+      return;
     }
+
+    setSelectedPrompt(prompts.length > 0 ? prompts[0] : null);
   }, [prompts, selectedPrompt]);
 
   return (
@@ -45,6 +61,7 @@ export function PromptsContainer({ prompts, collections = [], initialSelectedId 
         <PromptList
           prompts={prompts}
           collections={collections}
+          view={view}
           selectedId={selectedPrompt?.id}
           onSelect={setSelectedPrompt}
           className="h-full"

@@ -7,10 +7,10 @@ inputDocuments:
 workflowType: 'architecture'
 project_name: 'prompt-repo'
 user_name: 'pedroid'
-date: '2026-02-08'
+date: '2026-02-11'
 lastStep: 8
 status: 'complete'
-completedAt: '2026-02-08'
+completedAt: '2026-02-11'
 ---
 
 # Architecture Decision Document
@@ -43,6 +43,63 @@ The system is driven by extreme performance targets: <100ms for search, <50ms fo
 - **Accessibility:** Keyboard-first requirement affects all interactive components.
 - **Data Integrity:** Version history must be consistent and non-destructive.
 - **State Management:** Synchronizing the Resolution Engine with the prompt template in real-time.
+
+## Phase 2 Context Analysis: Snapshots & Visual Diffs
+
+### Requirements Overview (Phase 2)
+
+**Functional Requirements:**
+- **FR14-16:** Persistent "Snapshots" for capturing and re-hydrating resolution states.
+- **Visual Diffs:** Interactive comparison tool for historical versions.
+
+**Non-Functional Requirements:**
+- **NFR9 (Snapshot Latency):** Sub-50ms retrieval and form hydration.
+
+### Technical Challenges & Implications
+
+- **Snapshot State Persistence:** Requires a strategy to store variable values mapped to specific prompt versions.
+- **Diffing UI:** Must handle large text blocks efficiently within the 400px-600px sidebar constraint.
+
+### Cross-Cutting Concerns Identified (Phase 2)
+
+- **Data Integrity:** Ensuring snapshots remain valid as prompts evolve.
+- **UI Density:** Maintaining the high-density "sidecar" feel while adding complex comparison views.
+
+## Core Architectural Decisions (Phase 2)
+
+### Decision Priority Analysis (Phase 2)
+
+**Critical Decisions (Block Implementation):**
+- **Snapshot Referential Integrity:** Snapshots are locked to `prompt_version_id` to ensure immutability and schema safety.
+- **Snapshot Data Storage:** Use a `jsonb` column for flexible variable storage.
+
+**Important Decisions (Shape Architecture):**
+- **Visual Diffing Strategy:** Client-side calculation using the `diff` library (v8.0.3) for sub-16ms interactive performance.
+
+### Data Architecture (Phase 2)
+
+**Snapshot Storage Pattern: Version-Locked JSONB**
+- **Decision:** Create a `prompt_snapshots` table with a `prompt_version_id` foreign key and a `variables` `jsonb` column.
+- **Rationale:** Prevents "broken" snapshots when templates change and leverages Postgres `jsonb` for high-performance variable retrieval.
+- **Affects:** Resolution Engine, Version Manager.
+
+### Frontend Architecture (Phase 2)
+
+**Visual Diffing: Client-Side Myers Algorithm**
+- **Decision:** Implement text comparisons using the `diff` library executed on the client.
+- **Rationale:** Supports real-time version comparisons and live "preview" diffing without server round-trips.
+- **Affects:** Prompt History View.
+
+### Decision Impact Analysis (Phase 2)
+
+**Implementation Sequence:**
+1. Migration for `prompt_snapshots` table with RLS policies.
+2. Resolution Engine update to support "Save Snapshot" and "Re-resolve" (form hydration).
+3. Version Comparison component using `diff` library.
+
+**Cross-Component Dependencies:**
+- **Snapshots** depend on **Immutable Versions** (Phase 1) to guarantee referential integrity.
+- **Diffing UI** requires **Version History** data to be pre-fetched or streamed.
 
 ## Starter Template Evaluation
 
@@ -222,10 +279,27 @@ Fast Refresh, ESLint, and PostCSS.
 - Check for existing co-located tests before creating new ones.
 - Follow the `snake_case` (DB) to `camelCase` (Code) mapping.
 - Prioritize Server Components and Server Actions over client-side fetching.
+- **Phase 2:** Use the `hydrateResolutionForm` utility for all Snapshot-to-Form mappings.
+- **Phase 2:** Use the `DiffViewer` component for all text comparison UI, ensuring consistent Tailwind styling.
 
 **Pattern Enforcement:**
 - Verified via `npm run lint` and `tsc` before any story completion.
 - Documented violations should be corrected in the "Code Review" phase.
+
+### Phase 2 Implementation Patterns
+
+**Naming & Database Patterns:**
+- **Table Name:** `prompt_snapshots` (consistent with `prompt_versions`).
+- **Columns:** `user_id` (FK), `prompt_version_id` (FK), `name` (text), `variables` (`jsonb`).
+- **Constraint:** RLS must ensure snapshots are private to the `auth.uid()`.
+
+**Hydration & State Management:**
+- **Pattern:** Centralized hydration utility `hydrateResolutionForm(snapshot: Snapshot)` to map `jsonb` data to React Hook Form state.
+- **Conflict Prevention:** All agents must use this utility to handle edge cases like missing variables or renamed keys consistently.
+
+**UI & Interaction Patterns:**
+- **Diff Rendering:** Unified `DiffViewer` component using the `diff` library. Standard Tailwind classes (`text-green-500`, `text-red-500`, `bg-green-500/10`) must be used for all diff highlights.
+- **Feedback:** "Re-resolve" from a snapshot must trigger a "Snapshot Applied" toast notification for user confirmation.
 
 ## Project Structure & Boundaries
 
@@ -288,6 +362,25 @@ Features are independent (e.g., `ResolutionEngine` has no direct knowledge of `V
 - **Authentication:** `src/middleware.ts` and `src/lib/supabase/`.
 - **UI System:** `src/components/ui/` (Shadcn components).
 
+## Project Structure & Boundaries (Phase 2 Updates)
+
+### Updated Feature Mapping
+
+**Snapshots (FR14-16)**
+- **Feature Home:** `src/features/snapshots/`
+- **Database:** `prompt_snapshots` table
+- **Integration:** Hooks into `src/features/resolution-engine/` for state hydration.
+
+**Visual Diffs**
+- **Feature Home:** `src/features/version-control/components/diff-viewer.tsx`
+- **Logic:** Client-side using `diff` library.
+- **Integration:** Displayed within the version history timeline.
+
+### Architectural Boundaries (Phase 2)
+
+**Snapshot Hydration Boundary:**
+All Snapshot data must pass through `src/features/resolution-engine/utils/hydration.ts` before being applied to the UI state. This prevents malformed `jsonb` data from crashing the resolution form.
+
 ## Architecture Validation Results
 
 ### Coherence Validation ✅
@@ -307,25 +400,25 @@ The feature-based directory structure clearly separates the major architectural 
 Every core feature identified in the PRD and UX spec has a defined location and technical strategy within the architecture.
 
 **Functional Requirements Coverage:**
-All 13 Functional Requirements are architecturally supported, with clear mappings to specific components and data models.
+All 16 Functional Requirements (including Phase 2 Snapshots) are architecturally supported, with clear mappings to specific components and data models.
 
 **Non-Functional Requirements Coverage:**
-The sub-100ms search and high-density UX requirements are addressed via tsvector indexing and Shadcn/Tailwind component density rules.
+The sub-100ms search and high-density UX requirements are addressed via tsvector indexing and Shadcn/Tailwind component density rules. Phase 2 Snapshot latency is addressed via jsonb storage and client-side hydration.
 
 ### Implementation Readiness Validation ✅
 
 **Decision Completeness:**
-Critical decisions regarding data, search, auth, and state management are fully documented with rationale.
+Critical decisions regarding data, search, auth, state management, snapshots, and diffing are fully documented with rationale.
 
 **Structure Completeness:**
-The project structure is complete, specific, and ready for automated scaffolding.
+The project structure is complete, specific, and updated for Phase 2 features.
 
 **Pattern Completeness:**
-Naming, structural, and process patterns are comprehensive enough to guide multiple AI agents without conflict.
+Naming, structural, and process patterns (including hydration and diffing) are comprehensive enough to guide multiple AI agents without conflict.
 
 ### Gap Analysis Results
 - **Priority: Low** - "Collections" logic (FR13) is minimally defined but has a dedicated folder for future expansion.
-- **Priority: Low** - Visual Version Diffing is deferred to Phase 2 to ensure MVP velocity.
+- **Priority: Low** - Visual Version Diffing is now fully specified for Phase 2.
 
 ### Architecture Completeness Checklist
 - [x] Project context thoroughly analyzed
@@ -352,14 +445,13 @@ Naming, structural, and process patterns are comprehensive enough to guide multi
 **Confidence Level:** High
 
 **Key Strengths:**
-- Clear performance strategy for search and UI.
+- Clear performance strategy for search, resolution, and diffing.
 - Strict multi-tenant isolation via RLS.
 - High-density, keyboard-first UX focus.
-- Clean feature-based code organization.
+- Clean feature-based code organization with explicit Phase 2 patterns.
 
 **Areas for Future Enhancement:**
-- Phase 2: Visual Version Diffing.
-- Phase 2: Multi-model prompt metadata.
+- Phase 3: Prompt Chaining and CLI/IDE extensions.
 
 ### Implementation Handoff
 
@@ -370,5 +462,4 @@ Naming, structural, and process patterns are comprehensive enough to guide multi
 - Refer to this document for all architectural questions.
 
 **First Implementation Priority:**
-Initialize project with:
-`npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"`
+Migration for `prompt_snapshots` table with RLS policies.

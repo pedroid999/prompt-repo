@@ -36,7 +36,7 @@ export default async function RootLayout({
   const { data: collections } = await getCollections();
 
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground flex h-screen overflow-hidden`}
       >

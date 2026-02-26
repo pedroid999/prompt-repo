@@ -29,6 +29,9 @@ FR10: System provides a real-time "resolved" prompt preview.
 FR11: Users can copy the resolved prompt with one click.
 FR12: Users can perform sub-100ms full-text search and filter by tags/collections.
 FR13: Users can organize prompts into multiple named Collections.
+FR14: Users can save a "Snapshot" of a resolved prompt, preserving both the template version and the specific variable values used.
+FR15: Users can view a list of Snapshots for a specific prompt and copy the resolved content with one click.
+FR16: Users can "Re-resolve" from a Snapshot, opening the resolution form with all variable fields pre-filled from the saved state.
 
 ### NonFunctional Requirements
 
@@ -36,37 +39,44 @@ NFR1 (Latency): Global search < 100ms; Variable form generation < 50ms.
 NFR2 (Snappiness): Resolved preview updates < 16ms (60fps); "Copied" feedback < 100ms.
 NFR3 (Accessibility): 100% of core "Search -> Resolve -> Copy" loop is keyboard-completable.
 NFR4 (Density): UI remains fully functional at 400px width for sidebar use.
-NFR5 (Isolation): Verified RLS policies ensuring zero cross-tenant data leakage.
-NFR6 (Encryption): Data encrypted at rest and in transit (TLS 1.2+).
+NFR5 (Isolation): Verified data isolation policies ensuring zero cross-tenant data leakage.
+NFR6 (Encryption): Data encrypted at rest (database storage) and in transit (TLS 1.2+).
 NFR7 (Integrity): Guaranteed immutability of historical prompt versions.
-NFR8 (Uptime): 99.9% availability via Vercel Edge.
+NFR8 (Uptime): 99.9% availability via global edge network.
+NFR9 (Snapshot Latency): Snapshot retrieval and form pre-filling < 50ms.
 
 ### Additional Requirements
 
 - **Starter Template**: Next.js 15 + Supabase SSR (Manual Init) is required.
 - **Initialization Command**: `npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"` followed by shadcn and supabase install.
-- **Database Schema**: Two-Table Pattern (prompts + prompt_versions) with strict snake_case.
+- **Database Schema**: Two-Table Pattern (prompts + prompt_versions) for Phase 1; `prompt_snapshots` table with `jsonb` for Phase 2.
 - **Search Architecture**: PostgreSQL tsvector with GIN index for sub-100ms performance.
 - **State Management**: React Hook Form + Zod for the Resolution Engine.
 - **UI System**: shadcn/ui + Tailwind with Kanagawa theme (Dragon/Fuji/Crystal Blue).
 - **UX Constraints**: Sidebar-first design (400px-600px) with Geist Mono for all content.
-- **Keyboard Navigation**: Cmd+K for search, Tab for variables, Cmd+Enter to resolve.
+- **Keyboard Navigation**: Cmd+K (Search), Cmd+S (Save Snapshot), D (Diff), Cmd+Enter (Resolve/Copy), Esc (Close).
+- **Phase 2 Patterns**: `hydrateResolutionForm` utility for Snapshot-to-Form mapping.
+- **Phase 2 Patterns**: `DiffViewer` component for client-side text comparisons using `diff` library (v8.0.3).
+- **Accessibility**: WCAG 2.1 AA with full keyboard navigability.
 
 ### FR Coverage Map
 
-**FR1:** Epic 1 (Email/Pass Auth)
-**FR2:** Epic 1 (OAuth)
-**FR3:** Epic 1 (Profile Mgmt)
-**FR4:** Epic 1 (Multi-tenancy/RLS)
-**FR5:** Epic 2 (CRUD Prompts)
-**FR6:** Epic 2 (Auto-Versioning)
-**FR7:** Epic 2 (Version Notes)
-**FR8:** Epic 2 (History/Restore)
-**FR9:** Epic 3 (Variable Detection)
-**FR10:** Epic 3 (Real-time Preview)
-**FR11:** Epic 3 (Copy Action)
-**FR12:** Epic 4 (Search/Filter)
-**FR13:** Epic 4 (Collections)
+FR1: Epic 1 - Identity & Access
+FR2: Epic 1 - Identity & Access
+FR3: Epic 1 - Identity & Access
+FR4: Epic 1 - Identity & Access
+FR5: Epic 2 - Core Prompt Management
+FR6: Epic 2 - Core Prompt Management
+FR7: Epic 2 - Core Prompt Management
+FR8: Epic 2 - Core Prompt Management
+FR9: Epic 3 - Resolution Engine
+FR10: Epic 3 - Resolution Engine
+FR11: Epic 3 - Resolution Engine
+FR12: Epic 4 - Discovery & Organization
+FR13: Epic 4 - Discovery & Organization
+FR14: Epic 5 - Snapshots & UX Polish
+FR15: Epic 5 - Snapshots & UX Polish
+FR16: Epic 5 - Snapshots & UX Polish
 
 ## Epic List
 
@@ -83,8 +93,12 @@ Transform static text into dynamic, reusable tools via the "Magic" variable dete
 **FRs covered:** FR9, FR10, FR11
 
 ### Epic 4: Discovery & Organization
-Provide the high-velocity search and organizational tools needed to manage a growing library.
+Provide high-velocity search and organizational tools needed to manage a growing library.
 **FRs covered:** FR12, FR13
+
+### Epic 5: Snapshots & UX Polish (Phase 2)
+Enable persistent state management via Snapshots and provide deep analytical clarity through Visual Diffs.
+**FRs covered:** FR14, FR15, FR16, Journey 2 (Visual Diffs)
 
 ## Epic 1: Foundation & Identity
 
@@ -315,3 +329,59 @@ So that I can use it as a persistent sidecar next to my IDE.
 **When** I use the Search -> Resolve -> Copy flow
 **Then** no content is clipped and all interactive elements remain accessible
 **And** high-density padding and Geist Mono typography ensure information is readable in the narrow view
+
+## Epic 5: Snapshots & UX Polish (Phase 2)
+
+Enable persistent state management via Snapshots and provide deep analytical clarity through Visual Diffs.
+
+### Story 5.1: Snapshot Database Schema & RLS
+
+As a developer,
+I want to implement the `prompt_snapshots` table with strict RLS,
+So that users can securely save their resolution states.
+
+**Acceptance Criteria:**
+
+**Given** a Supabase database
+**When** I run the migration for the `prompt_snapshots` table
+**Then** the table includes `id`, `user_id`, `prompt_version_id`, `name`, and `variables` (`jsonb`)
+**And** RLS policies ensure users can only access their own snapshots based on `auth.uid()`
+
+### Story 5.2: Save Snapshot & Listing
+
+As a user,
+I want to save a "Snapshot" of my current resolution variables,
+So that I can reuse them later.
+
+**Acceptance Criteria:**
+
+**Given** I am in Resolution Mode with variables filled
+**When** I click "Save Snapshot" or use `Cmd+S`
+**Then** the current variable state and name are saved to the database
+**And** I can see a list of saved snapshots for that specific prompt
+
+### Story 5.3: Snapshot Re-resolution (Hydration)
+
+As a user,
+I want to select a snapshot and have the resolution form pre-filled,
+So that I can copy the resolved prompt instantly.
+
+**Acceptance Criteria:**
+
+**Given** a prompt has saved snapshots
+**When** I select a snapshot from the list or search
+**Then** the Resolution Engine hydrates the form fields with the saved `jsonb` values in < 50ms
+**And** the preview updates immediately to show the resolved string
+
+### Story 5.4: Visual Diff Engine & UI
+
+As a user,
+I want to see a color-coded diff between two prompt versions,
+So that I can understand exactly what changed.
+
+**Acceptance Criteria:**
+
+**Given** I am in the History view
+**When** I select two versions to compare or trigger the "Diff" action (shortcut `D`)
+**Then** a monospaced view highlights additions in Emerald and deletions in Rose
+**And** the diff is calculated client-side using the `diff` library for sub-16ms responsiveness

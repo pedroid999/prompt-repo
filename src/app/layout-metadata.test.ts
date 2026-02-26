@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('next/font/google', () => ({
   Geist: vi.fn().mockReturnValue({ variable: 'geist-sans' }),

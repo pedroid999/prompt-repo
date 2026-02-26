@@ -9,6 +9,7 @@ vi.mock('@/lib/supabase/client', () => ({
 
 vi.mock('@/app/auth/actions', () => ({
   signInWithEmail: vi.fn(),
+  signUpWithEmail: vi.fn(),
   signInWithGithub: vi.fn(),
   signInWithGoogle: vi.fn(),
 }))

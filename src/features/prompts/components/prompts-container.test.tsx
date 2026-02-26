@@ -1,9 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { PromptsContainer } from './prompts-container';
+
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({ refresh: vi.fn() })),
+}));
 import { PromptWithLatestVersion } from '../types';
 
-const mockPrompts: PromptWithLatestVersion[] = [
+const mockPrompts: any[] = [
   {
     id: '1',
     user_id: 'user1',

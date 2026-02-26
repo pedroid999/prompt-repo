@@ -18,5 +18,6 @@ export interface PromptVersion {
 
 export interface PromptWithLatestVersion extends Prompt {
   latest_content: string;
+  latest_version_id: string;
   collection_ids: string[];
 }

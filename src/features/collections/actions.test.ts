@@ -53,7 +53,7 @@ describe('Collection Actions', () => {
     mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null })
     
     // Default success state
-    mockSupabase.data = []
+    (mockSupabase as any).data = []
     mockSupabase.error = null
     
     // For single(), we need to mock the resolution

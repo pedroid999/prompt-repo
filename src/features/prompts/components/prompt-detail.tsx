@@ -12,13 +12,13 @@ import { PromptHistory } from './prompt-history';
 import { getPromptHistory } from '../queries/get-prompt-history';
 import { restoreVersion } from '../actions/restore-version';
 import { saveNewVersion } from '../actions/save-new-version';
-import { updatePromptMetadata } from '../actions/manage-prompt';
+import { updatePromptMetadata, togglePromptPublic } from '../actions/manage-prompt';
 import { toast } from 'sonner';
 import { ResolutionForm } from '@/features/resolution-engine/components/resolution-form';
 import { extractVariables } from '@/lib/utils/variable-parser';
 import { SnapshotList } from '@/features/snapshots/components/snapshot-list';
 import { PromptSnapshot } from '@/features/snapshots/types';
-import { Pencil, X, Save, Check } from 'lucide-react';
+import { Pencil, X, Save, Check, Link as LinkIcon } from 'lucide-react';
 
 interface PromptDetailProps {
   prompt: PromptWithLatestVersion | null;
@@ -40,6 +40,7 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [isSavingMetadata, setIsSavingMetadata] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const handleSnapshotSaved = () => {
     setSnapshotRefreshKey(prev => prev + 1);
@@ -186,6 +187,30 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
     }
   };
 
+  const handleToggleShare = async () => {
+    if (!prompt) return;
+    setIsSharing(true);
+    try {
+      const result = await togglePromptPublic(prompt.id, !prompt.is_public);
+      if (result.success) {
+        toast.success(prompt.is_public ? 'Sharing disabled' : 'Prompt is now public');
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error('Failed to update sharing');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (!prompt) return;
+    navigator.clipboard.writeText(`${window.location.origin}/p/${prompt.id}`);
+    toast.success('Link copied');
+  };
+
   if (!prompt) {
     return (
       <div className={cn('flex h-full items-center justify-center bg-sidebar text-muted-foreground', className)}>
@@ -253,14 +278,42 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
             )}
           </div>
           {!isEditingMetadata && !isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleStartMetadataEdit}
-              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-            >
-              Edit Details
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              {prompt.is_public && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  title="Copy public link"
+                >
+                  <LinkIcon className="h-3 w-3 mr-1" />
+                  Copy link
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleShare}
+                disabled={isSharing}
+                className={cn(
+                  'h-7 px-2 text-xs',
+                  prompt.is_public
+                    ? 'text-primary hover:text-primary/80'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {isSharing ? '...' : prompt.is_public ? 'Public' : 'Share'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleStartMetadataEdit}
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Edit Details
+              </Button>
+            </div>
           )}
         </div>
 

@@ -55,7 +55,7 @@ export function PromptsContainer({
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col md:flex-row overflow-hidden">
       <aside className={cn(
-        "w-full md:w-80 border-b md:border-b-0 md:border-r border-sidebar-border shrink-0 bg-sidebar",
+        "w-full md:w-80 border-b md:border-b-0 md:border-r border-sidebar-border shrink-0 h-full bg-sidebar",
         selectedPrompt && "hidden md:block"
       )}>
         <PromptList

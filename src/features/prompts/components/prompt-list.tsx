@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useRef, useTransition } from 'react';
 import { PromptWithLatestVersion } from '../types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -57,6 +57,7 @@ export function PromptList({
 }: PromptListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleToggleCollection = async (promptId: string, collectionId: string, isAdded: boolean) => {
     const result = isAdded
@@ -112,7 +113,7 @@ export function PromptList({
   };
 
   return (
-    <div className={cn('flex flex-col h-full bg-[#16161D]', className)}>
+    <div className={cn('flex flex-col h-full overflow-hidden bg-[#16161D]', className)}>
       {/* Section header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#2D4F67]/60 shrink-0">
         <div className="flex items-center gap-2">
@@ -130,7 +131,7 @@ export function PromptList({
 
       <ScrollArea className="flex-1">
         <div className="flex flex-col py-1">
-          {prompts.map((prompt) => {
+          {prompts.map((prompt, index) => {
             const isSelected = selectedId === prompt.id;
             const preview = prompt.description
               ? prompt.description
@@ -141,9 +142,20 @@ export function PromptList({
                 <ContextMenuTrigger>
                   <button
                     type="button"
+                    ref={(el) => { itemRefs.current[index] = el; }}
                     onClick={() => onSelect(prompt)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        itemRefs.current[index + 1]?.focus();
+                      } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        itemRefs.current[index - 1]?.focus();
+                      }
+                    }}
                     className={cn(
-                      'w-full text-left px-3 py-2.5 relative flex gap-3 items-start transition-colors outline-none group',
+                      'w-full text-left px-3 py-2.5 relative flex gap-3 items-start transition-colors group',
+                      'focus-visible:ring-2 focus-visible:ring-[#7E9CD8] focus-visible:ring-inset',
                       'border-l-2',
                       isSelected
                         ? 'bg-[#2D4F67]/60 border-l-[#7E9CD8]'

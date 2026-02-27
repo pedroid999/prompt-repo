@@ -3,6 +3,7 @@ import {
   archivePrompt,
   deletePrompt,
   restorePrompt,
+  togglePromptPublic,
   updatePromptMetadata,
 } from './manage-prompt';
 
@@ -102,6 +103,49 @@ describe('manage prompt actions', () => {
     const result = await archivePrompt('prompt-1');
 
     expect(result).toEqual({ success: false, error: 'Unauthorized' });
+  });
+
+  describe('togglePromptPublic', () => {
+    it('enables sharing', async () => {
+      const query = queryBuilderFactory();
+      query.eq.mockResolvedValue({ error: null });
+      mockSupabase.from.mockReturnValue(query);
+
+      const result = await togglePromptPublic('prompt-1', true);
+
+      expect(result).toEqual({ success: true });
+      expect(query.update).toHaveBeenCalledWith({ is_public: true });
+      expect(query.eq).toHaveBeenCalledWith('id', 'prompt-1');
+    });
+
+    it('disables sharing', async () => {
+      const query = queryBuilderFactory();
+      query.eq.mockResolvedValue({ error: null });
+      mockSupabase.from.mockReturnValue(query);
+
+      const result = await togglePromptPublic('prompt-1', false);
+
+      expect(result).toEqual({ success: true });
+      expect(query.update).toHaveBeenCalledWith({ is_public: false });
+    });
+
+    it('returns unauthorized when no user', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: null }, error: null });
+
+      const result = await togglePromptPublic('prompt-1', true);
+
+      expect(result).toEqual({ success: false, error: 'Unauthorized' });
+    });
+
+    it('returns error on DB failure', async () => {
+      const query = queryBuilderFactory();
+      query.eq.mockResolvedValue({ error: { message: 'db error' } });
+      mockSupabase.from.mockReturnValue(query);
+
+      const result = await togglePromptPublic('prompt-1', true);
+
+      expect(result).toEqual({ success: false, error: 'Failed to update sharing: db error' });
+    });
   });
 
   it('validates metadata input', async () => {

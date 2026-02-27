@@ -8,6 +8,7 @@ interface DbPromptResponse {
   title: string;
   description: string | null;
   archived_at: string | null;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
   prompt_versions: {
@@ -33,6 +34,7 @@ export async function getPrompts(
       title,
       description,
       archived_at,
+      is_public,
       created_at,
       updated_at,
       prompt_versions (
@@ -75,6 +77,7 @@ export async function getPrompts(
       title: prompt.title,
       description: prompt.description,
       archived_at: prompt.archived_at,
+      is_public: prompt.is_public,
       created_at: prompt.created_at,
       updated_at: prompt.updated_at,
       latest_content: latestVersion?.content || '',

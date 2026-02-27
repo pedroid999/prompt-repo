@@ -4,6 +4,7 @@ export interface SearchResult {
   title: string
   description: string | null
   archived_at: string | null
+  is_public: boolean
   created_at: string
   updated_at: string
   latest_content: string

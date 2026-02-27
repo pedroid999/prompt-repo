@@ -24,6 +24,7 @@ vi.mock('../actions/save-new-version', () => ({
 
 vi.mock('../actions/manage-prompt', () => ({
   updatePromptMetadata: vi.fn(),
+  togglePromptPublic: vi.fn(),
 }));
 
 // Mock Sonner Toast
@@ -42,6 +43,7 @@ const mockPrompt: any = {
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   archived_at: null,
+  is_public: false,
   latest_content: 'Content One',
   latest_version_id: 'v-latest',
 };
@@ -94,6 +96,46 @@ describe('PromptDetail', () => {
     render(<PromptDetail prompt={null} />);
 
     expect(screen.getByText('Select a prompt to view details')).toBeInTheDocument();
+  });
+
+  describe('share toggle UI', () => {
+    it('shows Share button when prompt is private', () => {
+      render(<PromptDetail prompt={{ ...mockPrompt, is_public: false }} />);
+
+      expect(screen.getByRole('button', { name: 'Share' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /copy link/i })).not.toBeInTheDocument();
+    });
+
+    it('shows Public button and Copy link button when prompt is public', () => {
+      render(<PromptDetail prompt={{ ...mockPrompt, is_public: true }} />);
+
+      expect(screen.getByRole('button', { name: /public/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /copy link/i })).toBeInTheDocument();
+    });
+
+    it('calls togglePromptPublic with true when Share is clicked on private prompt', async () => {
+      const managePromptModule = await import('../actions/manage-prompt');
+      vi.mocked(managePromptModule.togglePromptPublic).mockResolvedValue({ success: true });
+
+      render(<PromptDetail prompt={{ ...mockPrompt, is_public: false }} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+
+      await waitFor(() => {
+        expect(managePromptModule.togglePromptPublic).toHaveBeenCalledWith('1', true);
+      });
+    });
+
+    it('calls togglePromptPublic with false when Public is clicked on public prompt', async () => {
+      const managePromptModule = await import('../actions/manage-prompt');
+      vi.mocked(managePromptModule.togglePromptPublic).mockResolvedValue({ success: true });
+
+      render(<PromptDetail prompt={{ ...mockPrompt, is_public: true }} />);
+      fireEvent.click(screen.getByRole('button', { name: /public/i }));
+
+      await waitFor(() => {
+        expect(managePromptModule.togglePromptPublic).toHaveBeenCalledWith('1', false);
+      });
+    });
   });
 
   it('allows editing metadata fields', async () => {

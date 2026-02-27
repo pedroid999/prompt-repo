@@ -73,6 +73,26 @@ export async function deletePrompt(promptId: string): Promise<PromptActionResult
   return { success: true };
 }
 
+export async function togglePromptPublic(
+  promptId: string,
+  isPublic: boolean,
+): Promise<PromptActionResult> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { error } = await supabase
+    .from('prompts')
+    .update({ is_public: isPublic })
+    .eq('id', promptId);
+
+  if (error) {
+    return { success: false, error: `Failed to update sharing: ${error.message}` };
+  }
+
+  revalidatePath('/');
+  return { success: true };
+}
+
 export async function updatePromptMetadata(
   promptId: string,
   input: PromptMetadataInput,

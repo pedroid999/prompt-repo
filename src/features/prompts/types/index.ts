@@ -4,8 +4,16 @@ export interface Prompt {
   title: string;
   description: string | null;
   archived_at: string | null;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface PublicPrompt {
+  id: string;
+  title: string;
+  description: string | null;
+  latest_content: string;
 }
 
 export interface PromptVersion {

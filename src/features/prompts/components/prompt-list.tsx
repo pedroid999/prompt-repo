@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useTransition } from 'react';
 import { PromptWithLatestVersion } from '../types';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FileText } from 'lucide-react';
 import {
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/context-menu";
 import { addToCollection, removeFromCollection } from '@/features/collections/actions';
 import { archivePrompt, deletePrompt, restorePrompt } from '@/features/prompts/actions/manage-prompt';
+import { duplicatePrompt } from '@/features/prompts/actions/duplicate-prompt';
 import { toast } from 'sonner';
 
 interface Collection {
@@ -58,6 +58,7 @@ export function PromptList({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const copiedPromptRef = useRef<PromptWithLatestVersion | null>(null);
 
   const handleToggleCollection = async (promptId: string, collectionId: string, isAdded: boolean) => {
     const result = isAdded
@@ -129,7 +130,7 @@ export function PromptList({
         )}
       </div>
 
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col py-1">
           {prompts.map((prompt, index) => {
             const isSelected = selectedId === prompt.id;
@@ -151,6 +152,23 @@ export function PromptList({
                       } else if (e.key === 'ArrowUp') {
                         e.preventDefault();
                         itemRefs.current[index - 1]?.focus();
+                      } else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                        e.preventDefault();
+                        copiedPromptRef.current = prompt;
+                        toast.success(`"${prompt.title}" copied`);
+                      } else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                        e.preventDefault();
+                        if (!copiedPromptRef.current) return;
+                        const toCopy = copiedPromptRef.current;
+                        startTransition(async () => {
+                          const result = await duplicatePrompt(toCopy.id);
+                          if (result.success) {
+                            toast.success(`"${toCopy.title}" pasted`);
+                            router.push(`/?id=${result.data.id}`);
+                          } else {
+                            toast.error(result.error);
+                          }
+                        });
                       }
                     }}
                     className={cn(
@@ -268,7 +286,7 @@ export function PromptList({
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

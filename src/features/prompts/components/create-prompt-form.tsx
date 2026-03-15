@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { promptCreateSchema, PromptCreateInput } from '@/lib/validation/prompt';
 import { savePrompt } from '@/features/prompts/actions/save-prompt';
+import { ComposerToolbar, ComposerEditor, DiffDialog } from '@/features/ai-composer/components';
+import { useComposer } from '@/features/ai-composer/hooks/use-composer';
 
 export function CreatePromptForm() {
   const [isPending, setIsPending] = useState(false);
@@ -34,11 +36,29 @@ export function CreatePromptForm() {
     },
   });
 
+  // Sync composer structured content → form content field
+  const handleComposerContentChange = useCallback(
+    (content: string) => {
+      form.setValue('content', content, { shouldValidate: true, shouldDirty: true });
+    },
+    [form],
+  );
+
+  const composer = useComposer({
+    initialContent: '',
+    onContentChange: handleComposerContentChange,
+  });
+
   async function onSubmit(data: PromptCreateInput) {
+    // If in structured mode, ensure the latest structured content is used
+    if (composer.mode === 'structured' && composer.structuredContent) {
+      data.content = composer.structuredContent;
+    }
+
     setIsPending(true);
     try {
       const result = await savePrompt(data);
-      
+
       if (result.success) {
         toast.success('Prompt created successfully', {
           description: 'Your new prompt has been saved.',
@@ -49,6 +69,10 @@ export function CreatePromptForm() {
           className: 'border-success text-success',
         });
         form.reset();
+        // Reset composer state after successful save
+        composer.setBrainstormContent('');
+        composer.setStructuredContent('');
+        composer.setMode('brainstorm');
       } else {
         toast.error('Failed to create prompt', {
           description: result.error,
@@ -86,10 +110,10 @@ export function CreatePromptForm() {
             <FormItem className="space-y-1">
               <FormLabel className="text-sm">Description</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Describe your prompt (optional)" 
+                <Textarea
+                  placeholder="Describe your prompt (optional)"
                   className="resize-none min-h-[60px] md:min-h-[80px] text-sm"
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
               <FormDescription className="text-xs">
@@ -106,15 +130,36 @@ export function CreatePromptForm() {
           render={({ field }) => (
             <FormItem className="space-y-1">
               <FormLabel className="text-sm">Prompt Content</FormLabel>
+              {/* AI Composer Toolbar */}
+              <ComposerToolbar
+                mode={composer.mode}
+                onModeChange={composer.setMode}
+                availableProviders={composer.availableProviders}
+                selectedProvider={composer.selectedProvider}
+                onProviderChange={composer.setSelectedProvider}
+                availableModels={composer.availableModels}
+                selectedModel={composer.selectedModel}
+                onModelChange={composer.setSelectedModel}
+                isStructuring={composer.isStructuring}
+                onStructure={composer.triggerStructure}
+                hasBrainstormContent={composer.brainstormContent.trim().length > 0}
+              />
+              {/* AI Composer Editor (replaces plain Textarea) */}
               <FormControl>
-                <Textarea 
-                  placeholder="Write your prompt content here..." 
-                  className="min-h-[150px] md:min-h-[200px] font-mono text-sm"
-                  {...field} 
+                <ComposerEditor
+                  mode={composer.mode}
+                  brainstormContent={composer.brainstormContent}
+                  onBrainstormChange={composer.setBrainstormContent}
+                  structuredContent={field.value}
+                  onStructuredChange={(value) => {
+                    field.onChange(value);
+                    composer.setStructuredContent(value);
+                  }}
+                  isStructuring={composer.isStructuring}
                 />
               </FormControl>
               <FormDescription className="text-xs">
-                The actual content of the prompt. Supports markdown.
+                Use brainstorm mode to draft ideas, then click &quot;Structure with AI&quot; to transform them into a polished prompt. Or write directly in structured mode.
               </FormDescription>
               <FormMessage className="text-xs" />
             </FormItem>
@@ -143,6 +188,17 @@ export function CreatePromptForm() {
           {isPending ? 'Saving...' : 'Save Prompt'}
         </Button>
       </form>
+
+      {/* AI Diff Dialog — shows when AI structuring produces a result */}
+      <DiffDialog
+        open={composer.isDiffOpen}
+        onOpenChange={composer.setDiffOpen}
+        originalText={composer.brainstormContent}
+        structuredText={composer.pendingResult?.structuredContent ?? ''}
+        model={composer.pendingResult?.model}
+        onAccept={composer.acceptResult}
+        onReject={composer.rejectResult}
+      />
     </Form>
   );
 }

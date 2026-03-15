@@ -86,7 +86,7 @@ describe('AI Composer — Server Actions', () => {
 
       mockAdapter.structure.mockResolvedValue({
         structuredContent: '# Structured prompt\n\nHello {{name}}',
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6-20250514',
         tokensUsed: { input: 100, output: 50 },
       });
 
@@ -98,7 +98,7 @@ describe('AI Composer — Server Actions', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.structuredContent).toContain('Structured prompt');
-        expect(result.data.model).toBe('claude-sonnet-4-20250514');
+        expect(result.data.model).toBe('claude-sonnet-4-6-20250514');
       }
     });
 

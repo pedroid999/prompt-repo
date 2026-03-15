@@ -2,6 +2,7 @@ import { getProfile } from './actions'
 import { ProfileForm } from '@/components/features/profile/profile-form'
 import { ApiKeysCard } from '@/components/features/profile/api-keys-card'
 import { McpConfigCard } from '@/components/features/profile/mcp-config-card'
+import { AiProvidersCard } from '@/components/features/profile/ai-providers-card'
 import { redirect } from 'next/navigation'
 
 export default async function ProfilePage() {
@@ -18,6 +19,10 @@ export default async function ProfilePage() {
 
       <section>
         <ApiKeysCard />
+      </section>
+
+      <section>
+        <AiProvidersCard />
       </section>
 
       <section>

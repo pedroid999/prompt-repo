@@ -2,6 +2,20 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { PromptsContainer } from './prompts-container';
 
+// Mock server-only to prevent "cannot be imported from a Client Component" error
+vi.mock('server-only', () => ({}));
+
+// Mock server modules imported transitively via useComposer
+vi.mock('@/features/ai-providers/queries', () => ({
+  getProviderDisplayList: vi.fn().mockResolvedValue([]),
+  getProviderConfig: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock('@/features/ai-composer/actions', () => ({
+  structurePrompt: vi.fn(),
+  listOllamaModels: vi.fn().mockResolvedValue([]),
+}));
+
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({ refresh: vi.fn() })),
 }));

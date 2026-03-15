@@ -4,6 +4,20 @@ import { PromptDetail } from './prompt-detail';
 import { PromptWithLatestVersion, PromptVersion } from '../types';
 import * as queryModule from '../queries/get-prompt-history';
 
+// Mock server-only to prevent "cannot be imported from a Client Component" error
+vi.mock('server-only', () => ({}));
+
+// Mock server modules imported transitively via useComposer
+vi.mock('@/features/ai-providers/queries', () => ({
+  getProviderDisplayList: vi.fn().mockResolvedValue([]),
+  getProviderConfig: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock('@/features/ai-composer/actions', () => ({
+  structurePrompt: vi.fn(),
+  listOllamaModels: vi.fn().mockResolvedValue([]),
+}));
+
 // Mock next/navigation (useRouter added for router.refresh after save)
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({ refresh: vi.fn() })),

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition, useMemo } from 'react';
+import { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { PromptWithLatestVersion, PromptVersion } from '../types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,6 +19,8 @@ import { extractVariables } from '@/lib/utils/variable-parser';
 import { SnapshotList } from '@/features/snapshots/components/snapshot-list';
 import { PromptSnapshot } from '@/features/snapshots/types';
 import { Pencil, X, Save, Check, Link as LinkIcon } from 'lucide-react';
+import { ComposerToolbar, ComposerEditor, DiffDialog } from '@/features/ai-composer/components';
+import { useComposer } from '@/features/ai-composer/hooks/use-composer';
 
 interface PromptDetailProps {
   prompt: PromptWithLatestVersion | null;
@@ -41,6 +43,19 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
   const [editDescription, setEditDescription] = useState('');
   const [isSavingMetadata, setIsSavingMetadata] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+
+  // Sync composer structured content → editContent state
+  const handleEditComposerContentChange = useCallback(
+    (content: string) => {
+      setEditContent(content);
+    },
+    [],
+  );
+
+  const composer = useComposer({
+    initialContent: '',
+    onContentChange: handleEditComposerContentChange,
+  });
 
   const handleSnapshotSaved = () => {
     setSnapshotRefreshKey(prev => prev + 1);
@@ -111,6 +126,10 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
     if (!prompt) return;
     setEditContent(prompt.latest_content);
     setEditVersionNote('');
+    // Initialize composer with existing content in structured mode
+    composer.setStructuredContent(prompt.latest_content);
+    composer.setBrainstormContent('');
+    composer.setMode('brainstorm');
     setIsEditing(true);
   };
 
@@ -118,6 +137,10 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
     setIsEditing(false);
     setEditContent('');
     setEditVersionNote('');
+    // Reset composer state
+    composer.setBrainstormContent('');
+    composer.setStructuredContent('');
+    composer.setMode('brainstorm');
   };
 
   const handleSaveNewVersion = async () => {
@@ -387,12 +410,33 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
                 </Button>
               </div>
 
-              <Textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="flex-1 resize-none font-mono text-sm bg-background border-border text-foreground min-h-[200px]"
-                placeholder="Prompt content..."
-                autoFocus
+              {/* AI Composer Toolbar (only in edit mode) */}
+              <ComposerToolbar
+                mode={composer.mode}
+                onModeChange={composer.setMode}
+                availableProviders={composer.availableProviders}
+                selectedProvider={composer.selectedProvider}
+                onProviderChange={composer.setSelectedProvider}
+                availableModels={composer.availableModels}
+                selectedModel={composer.selectedModel}
+                onModelChange={composer.setSelectedModel}
+                isStructuring={composer.isStructuring}
+                onStructure={composer.triggerStructure}
+                hasBrainstormContent={composer.brainstormContent.trim().length > 0}
+              />
+
+              {/* AI Composer Editor (replaces plain Textarea) */}
+              <ComposerEditor
+                mode={composer.mode}
+                brainstormContent={composer.brainstormContent}
+                onBrainstormChange={composer.setBrainstormContent}
+                structuredContent={editContent}
+                onStructuredChange={(value) => {
+                  setEditContent(value);
+                  composer.setStructuredContent(value);
+                }}
+                isStructuring={composer.isStructuring}
+                className="flex-1 min-h-[200px]"
               />
 
               <div className="flex items-center gap-2 shrink-0">
@@ -424,6 +468,17 @@ export function PromptDetail({ prompt, className }: PromptDetailProps) {
                   )}
                 </Button>
               </div>
+
+              {/* AI Diff Dialog — shows when AI structuring produces a result */}
+              <DiffDialog
+                open={composer.isDiffOpen}
+                onOpenChange={composer.setDiffOpen}
+                originalText={composer.brainstormContent}
+                structuredText={composer.pendingResult?.structuredContent ?? ''}
+                model={composer.pendingResult?.model}
+                onAccept={composer.acceptResult}
+                onReject={composer.rejectResult}
+              />
             </div>
           ) : (
             /* ── Read mode ── */

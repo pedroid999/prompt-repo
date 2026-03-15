@@ -17,8 +17,8 @@ import { structurePrompt, listOllamaModels } from '@/features/ai-composer/action
 // ---------------------------------------------------------------------------
 
 const DEFAULT_CLOUD_MODELS: Record<string, string[]> = {
-  claude: ['Default (Claude Sonnet)'],
-  openai: ['Default (GPT-4o)'],
+  claude: ['Default (Claude Sonnet 4.6)'],
+  openai: ['Default (GPT-5-Mini)'],
   gemini: ['Default (Gemini Pro)'],
 };
 

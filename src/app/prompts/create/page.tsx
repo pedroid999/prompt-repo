@@ -1,15 +1,18 @@
 import { CreatePromptForm } from '@/features/prompts/components/create-prompt-form';
+import { BackButton } from '@/components/shared/back-button';
 
 export default function CreatePromptPage() {
   return (
-    <div className="container max-w-2xl p-4 md:py-10">
-      <div className="mb-4 md:mb-8 space-y-1 md:space-y-2">
-        <h1 className="text-xl md:text-3xl font-bold tracking-tight">Create Prompt</h1>
-        <p className="text-xs md:text-sm text-muted-foreground">
-          Create a new prompt to add to your collection.
-        </p>
-      </div>
-      <CreatePromptForm />
+    <div className="flex h-full flex-col bg-[#16161D]">
+      <header className="flex h-14 items-center border-b border-[#16161D] bg-[#1F1F28] px-4 md:px-6 gap-4">
+        <BackButton />
+        <h1 className="text-xl font-bold text-[#DCD7BA]">Create Prompt</h1>
+      </header>
+      <main className="flex-1 overflow-y-auto">
+        <div className="container max-w-2xl p-4 md:py-10">
+          <CreatePromptForm />
+        </div>
+      </main>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export const PROVIDER_TIMEOUT_MS = 30_000;
 /** Default models per provider (used when no model override is specified). */
 export const DEFAULT_MODELS: Record<string, string> = {
   claude: 'claude-sonnet-4-6-20250514',
-  openai: 'gpt-5-mini',
+  openai: 'gpt-4o-mini',
   gemini: 'gemini-2.0-flash',
   ollama: 'llama3.1',
 } as const;

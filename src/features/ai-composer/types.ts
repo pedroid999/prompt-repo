@@ -25,7 +25,7 @@ export interface AiStructureRequest {
 export interface AiStructureResult {
   /** The LLM-generated structured markdown content. */
   structuredContent: string;
-  /** The model that was actually used (e.g. "claude-sonnet-4-6-20250514"). */
+  /** The model that was actually used (e.g. "claude-sonnet-4-6"). */
   model: string;
   /** Token usage, if reported by the provider. */
   tokensUsed?: {

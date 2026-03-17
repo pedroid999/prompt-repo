@@ -39,7 +39,7 @@ describe('ClaudeAdapter', () => {
     it('should return structured content from the API response', async () => {
       mockCreate.mockResolvedValue({
         content: [{ type: 'text', text: '# Structured Prompt\n\nHello world' }],
-        model: 'claude-sonnet-4-6-20250514',
+        model: 'claude-sonnet-4-6',
         usage: { input_tokens: 100, output_tokens: 50 },
       });
 
@@ -53,14 +53,14 @@ describe('ClaudeAdapter', () => {
       expect(result.structuredContent).toBe(
         '# Structured Prompt\n\nHello world',
       );
-      expect(result.model).toBe('claude-sonnet-4-6-20250514');
+      expect(result.model).toBe('claude-sonnet-4-6');
       expect(result.tokensUsed).toEqual({ input: 100, output: 50 });
     });
 
     it('should pass system prompt and brainstorm text to the API', async () => {
       mockCreate.mockResolvedValue({
         content: [{ type: 'text', text: 'result' }],
-        model: 'claude-sonnet-4-6-20250514',
+        model: 'claude-sonnet-4-6',
         usage: { input_tokens: 10, output_tokens: 5 },
       });
 
@@ -105,7 +105,7 @@ describe('ClaudeAdapter', () => {
     it('should return empty string when no text block is found', async () => {
       mockCreate.mockResolvedValue({
         content: [],
-        model: 'claude-sonnet-4-6-20250514',
+        model: 'claude-sonnet-4-6',
         usage: { input_tokens: 10, output_tokens: 0 },
       });
 

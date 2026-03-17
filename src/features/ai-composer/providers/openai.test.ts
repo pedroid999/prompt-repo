@@ -37,7 +37,7 @@ describe('OpenAiAdapter', () => {
     it('should return structured content from the API response', async () => {
       mockCreate.mockResolvedValue({
         choices: [{ message: { content: '# Structured Result' } }],
-        model: 'gpt-5-mini',
+        model: 'gpt-5.4-mini-2026-03-17',
         usage: { prompt_tokens: 100, completion_tokens: 50 },
       });
 
@@ -49,14 +49,14 @@ describe('OpenAiAdapter', () => {
       const result = await adapter.structure('brainstorm', 'system');
 
       expect(result.structuredContent).toBe('# Structured Result');
-      expect(result.model).toBe('gpt-5-mini');
+      expect(result.model).toBe('gpt-5.4-mini-2026-03-17');
       expect(result.tokensUsed).toEqual({ input: 100, output: 50 });
     });
 
     it('should pass system and user messages to the API', async () => {
       mockCreate.mockResolvedValue({
         choices: [{ message: { content: 'result' } }],
-        model: 'gpt-5-mini',
+        model: 'gpt-5.4-mini-2026-03-17',
         usage: { prompt_tokens: 10, completion_tokens: 5 },
       });
 
@@ -82,7 +82,7 @@ describe('OpenAiAdapter', () => {
     it('should return empty string when no choice content', async () => {
       mockCreate.mockResolvedValue({
         choices: [{ message: { content: null } }],
-        model: 'gpt-5-mini',
+        model: 'gpt-5.4-mini-2026-03-17',
         usage: null,
       });
 
@@ -98,7 +98,7 @@ describe('OpenAiAdapter', () => {
     it('should handle missing usage data', async () => {
       mockCreate.mockResolvedValue({
         choices: [{ message: { content: 'result' } }],
-        model: 'gpt-5-mini',
+        model: 'gpt-5.4-mini-2026-03-17',
         usage: undefined,
       });
 

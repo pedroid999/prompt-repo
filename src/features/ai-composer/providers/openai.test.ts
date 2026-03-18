@@ -73,7 +73,7 @@ describe('OpenAiAdapter', () => {
             { role: 'system', content: 'system prompt' },
             { role: 'user', content: 'my notes' },
           ],
-          max_tokens: 4096,
+          max_completion_tokens: 4096,
         }),
         expect.objectContaining({ signal: expect.any(AbortSignal) }),
       );

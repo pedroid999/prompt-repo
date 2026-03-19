@@ -47,7 +47,7 @@ export class OpenAiAdapter implements AiProvider {
             { role: 'system', content: systemPrompt },
             { role: 'user', content: brainstormText },
           ],
-          max_tokens: 4096,
+          max_completion_tokens: 4096,
         },
         { signal: controller.signal },
       );

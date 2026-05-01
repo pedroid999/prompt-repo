@@ -100,6 +100,10 @@ Provide high-velocity search and organizational tools needed to manage a growing
 Enable persistent state management via Snapshots and provide deep analytical clarity through Visual Diffs.
 **FRs covered:** FR14, FR15, FR16, Journey 2 (Visual Diffs)
 
+### Epic 6: Lifecycle & Library Hygiene (Phase 3)
+Soften destructive operations and enable in-place metadata edits so users can keep their library tidy without losing version history.
+**FRs covered:** Extends FR5 (edit metadata) with non-destructive archive/restore semantics.
+
 ## Epic 1: Foundation & Identity
 
 Establish the high-performance application shell and secure user identity system so users can safely access their private workspace.
@@ -385,3 +389,33 @@ So that I can understand exactly what changed.
 **When** I select two versions to compare or trigger the "Diff" action (shortcut `D`)
 **Then** a monospaced view highlights additions in Emerald and deletions in Rose
 **And** the diff is calculated client-side using the `diff` library for sub-16ms responsiveness
+
+## Epic 6: Lifecycle & Library Hygiene (Phase 3)
+
+Soften destructive operations and enable in-place metadata edits so users can keep their library tidy without losing version history.
+
+### Story 6.1: Prompt Lifecycle Management (Archive/Restore + Metadata Edit)
+
+As a user,
+I want to archive prompts instead of deleting them immediately and edit prompt metadata,
+So that I can keep my library organized without losing version history.
+
+**Acceptance Criteria:**
+
+**Given** an active prompt in my library
+**When** I open the prompt list context menu and select "Archive"
+**Then** the prompt is soft-deleted via a `prompts.archived_at` timestamp
+**And** it disappears from the default library view
+
+**Given** I have archived prompts
+**When** I switch to the "Archived" view
+**Then** I can see all archived prompts and restore one back to the active library
+**And** I can permanently delete an archived prompt with an explicit confirmation step
+
+**Given** I am viewing the detail of a prompt
+**When** I edit the `title` or `description` inline
+**Then** the metadata updates without creating a new content version (separate from version-bearing edits)
+
+**Given** I am searching or listing prompts
+**When** the active/archived view toggle is set
+**Then** search and list queries respect that filter and never mix archived results into the active view

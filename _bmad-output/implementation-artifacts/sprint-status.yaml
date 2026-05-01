@@ -1,4 +1,4 @@
-# generated: 2026-02-11
+# generated: 2026-04-30
 # project: prompt-repo
 # project_key: NOKEY
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-02-11
+generated: 2026-04-30
 project: prompt-repo
 project_key: NOKEY
 tracking_system: file-system
@@ -52,14 +52,14 @@ development_status:
   2-2-create-versioned-save-logic: done
   2-3-prompt-list-detail-view: done
   2-4-version-history-restoration: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   epic-3: done
   3-1-variable-detection-regex-parser: done
   3-2-dynamic-resolution-form-just-in-time-ui: done
   3-3-real-time-resolved-preview: done
   3-4-one-click-copy-clipboard-feedback: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   epic-4: done
   4-1-high-performance-full-text-search: done
@@ -73,4 +73,8 @@ development_status:
   5-2-save-snapshot-listing: done
   5-3-snapshot-re-resolution-hydration: done
   5-4-visual-diff-engine-ui: done
-  epic-5-retrospective: optional
+  epic-5-retrospective: done
+
+  epic-6: done
+  6-1-prompt-lifecycle-management: done
+  epic-6-retrospective: done

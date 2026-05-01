@@ -1,0 +1,45 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2026-04-30T21:00:02Z",
+    "last_updated": "2026-05-01T12:00:00Z",
+    "completed": "2026-05-01T12:00:00Z"
+  },
+  "mode": "initial_scan",
+  "scan_level": "deep",
+  "project_root": "/Users/pedro.nieto/Documents/spec-driven-dev/repos/prompt-repo",
+  "output_folder": "/Users/pedro.nieto/Documents/spec-driven-dev/repos/prompt-repo/docs",
+  "completed_steps": [
+    {"step": "step_1", "status": "completed", "timestamp": "2026-04-30T21:01:00Z", "summary": "Classified as monolith with 1 part (project_type_id=web, Next.js 15 + Supabase + Tailwind 4)"},
+    {"step": "step_2", "status": "completed", "timestamp": "2026-04-30T21:02:00Z", "summary": "Found ~37 existing docs (README, CLAUDE.md, GEMINI.md, _bmad-output planning + implementation artifacts, RLS verification)"},
+    {"step": "step_3", "status": "completed", "timestamp": "2026-05-01T00:00:00Z", "summary": "Tech stack: Next.js 15 RSC + Server Actions + Supabase + Tailwind 4 + shadcn (new-york/zinc) + Vitest 4 + GH Actions CI on main"},
+    {"step": "step_4", "status": "completed", "timestamp": "2026-05-01T11:53:00Z", "summary": "Generated docs/api-contracts.md (14k), docs/data-models.md (16k), docs/component-inventory.md (11k). Surfaced drift: planning architecture mentions latest_version_id col that does not exist in current schema; FK target mix between profiles and auth.users."},
+    {"step": "step_5", "status": "completed", "timestamp": "2026-05-01T11:53:00Z", "summary": "Wrote docs/source-tree-analysis.md (15k) with annotated trees for src/, supabase/, _bmad-output/."},
+    {"step": "step_6", "status": "completed", "timestamp": "2026-05-01T11:55:00Z", "summary": "Wrote docs/development-guide.md (12k) and docs/deployment-guide.md (9.2k). Discovered .github/workflows/ci.yml existed (initially missed); CI gated to main only — flagged as gap."},
+    {"step": "step_7", "status": "skipped", "timestamp": "2026-05-01T11:55:00Z", "summary": "Single-part monolith — multi-part integration architecture not applicable."},
+    {"step": "step_8", "status": "completed", "timestamp": "2026-05-01T11:58:00Z", "summary": "Wrote docs/architecture.md (23k) — comprehensive AS-IS technical architecture with 4 request paths, RLS-as-authorisation model, MCP server design, drift section vs planning artifacts."},
+    {"step": "step_9", "status": "completed", "timestamp": "2026-05-01T11:59:00Z", "summary": "Wrote docs/project-overview.md (7.8k). Other supporting docs already produced in steps 4-6."},
+    {"step": "step_10", "status": "completed", "timestamp": "2026-05-01T11:59:00Z", "summary": "Wrote docs/index.md (9.1k) linking all generated docs and existing CLAUDE.md/README/BMAD planning + per-story implementation artifacts."},
+    {"step": "step_11", "status": "completed", "timestamp": "2026-05-01T12:00:00Z", "summary": "Validation complete: 9/9 required docs generated (contribution-guide skipped — no CONTRIBUTING.md; integration-arch skipped — monolith). No incomplete markers. 3 minor architectural findings recorded inside the docs (drift, CI gap, manual rollback in two-table mutations)."},
+    {"step": "step_12", "status": "completed", "timestamp": "2026-05-01T12:00:00Z", "summary": "Workflow finalized."}
+  ],
+  "current_step": "completed",
+  "findings": {
+    "project_classification": {"repository_type": "monolith", "parts_count": 1, "primary_tech": "Next.js 15 + Supabase"},
+    "existing_docs_count": 37,
+    "api_endpoints": "1 HTTP route (POST/OPTIONS /api/mcp), 1 OAuth callback, 6 page routes, 4 MCP tools, ~25 Server Actions across 7 feature modules",
+    "data_tables": "8 tables (profiles, prompts, prompt_versions, prompt_snapshots, collections, collection_prompts, user_api_keys, user_ai_providers); 9 functions/triggers; weighted FTS via tsvector",
+    "ui_components": "12 shadcn primitives, 8 cross-feature shared, 13 feature-local; 18 client components total; no global state library",
+    "ci_present": true,
+    "ci_branches": ["main"],
+    "drifts_flagged": [
+      "Planning arch + CLAUDE.md mention prompts.latest_version_id pointer column; current schema has no such column (uses get_latest_prompt_version_id() SQL function instead)",
+      "FK targeting inconsistency: prompts.user_id -> profiles(id) but other user-owned tables FK auth.users(id) directly",
+      "CI gated to main only; develop branch (default integration) ungated",
+      "Manual rollback in savePrompt/duplicatePrompt should be a Postgres transaction"
+    ]
+  },
+  "project_types": [{"part_id": "prompt-repo", "project_type_id": "web", "display_name": "Next.js Web Application", "root_path": "/Users/pedro.nieto/Documents/spec-driven-dev/repos/prompt-repo"}],
+  "outputs_generated": ["project-scan-report.json", "api-contracts.md", "data-models.md", "component-inventory.md", "source-tree-analysis.md", "development-guide.md", "deployment-guide.md", "architecture.md", "project-overview.md", "index.md"],
+  "resume_instructions": "Workflow complete. Re-run /bmad-bmm-document-project to regenerate or deep-dive."
+}
